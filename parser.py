@@ -1,0 +1,6 @@
+class Parser:
+    def __init__(self):
+        ...
+
+    def load_tokens(self, tokens):
+        ...
