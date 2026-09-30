@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-from pprint import pp
-
 from lexer import Token, TokenType
 
 

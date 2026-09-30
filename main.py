@@ -9,6 +9,7 @@ lexer = Lexer()
 lexer.load_source(s)
 
 tokens = lexer.get_tokens()
+pprint(tokens)
 
 parser = Parser()
 parser.load_tokens(tokens)
