@@ -2,3 +2,6 @@
 .idea
 types__pycache__
 m.py
+
+__pycache__/
+*.py[cod]
