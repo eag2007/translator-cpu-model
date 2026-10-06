@@ -35,12 +35,6 @@ class SetExpr(Expr):
 
 
 @dataclass
-class ElifExpr(Expr):
-    condition: Expr
-    body: list[Expr]
-
-
-@dataclass
 class IfExpr(Expr):
     condition: Expr
     body: list[Expr]
