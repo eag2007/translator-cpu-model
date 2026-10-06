@@ -1,8 +1,9 @@
+from compile import Compile
 from lexer import Lexer
 from parser import Parser
 from pprint import pprint
 
-with open("main.lisp", "r") as f:
+with open("test.lisp", "r") as f:
     s = f.read()
 
 lexer = Lexer()
@@ -14,4 +15,9 @@ pprint(tokens)
 parser = Parser()
 parser.load_tokens(tokens)
 
-pprint(parser.parse())
+ast_tree = parser.parse()
+pprint(ast_tree)
+
+
+compilator = Compile()
+compilator.load_ast(ast_tree)
