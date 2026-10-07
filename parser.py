@@ -125,7 +125,7 @@ class Parser:
             if token.type in [
                 TokenType.PLUS, TokenType.MINUS, TokenType.MULT, TokenType.DIV,
                 TokenType.EQUALS, TokenType.NOTEQUALS, TokenType.LEFT, TokenType.RIGHT,
-                TokenType.LEFTEQ, TokenType.RIGHTEQ
+                TokenType.LEFTEQ, TokenType.RIGHTEQ, TokenType.MOD
             ]:
                 return self.__parse_bin(token)
 

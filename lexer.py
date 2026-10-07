@@ -26,6 +26,7 @@ class TokenType(Enum):
     MINUS = auto()
     MULT = auto()
     DIV = auto()
+    MOD = auto()
 
     EQUALS = auto()
     NOTEQUALS = auto()
@@ -69,6 +70,7 @@ class Lexer:
         "-": TokenType.MINUS,
         "*": TokenType.MULT,
         "/": TokenType.DIV,
+        "%": TokenType.MOD,
         "==": TokenType.EQUALS,
         "!=": TokenType.NOTEQUALS,
         ">": TokenType.LEFT,
@@ -111,7 +113,7 @@ class Lexer:
                 self.position += 2
                 self.tokens.append(Token(self.KEYWORDS[mask2], mask2))
 
-            elif mask1 in ["-", "+", "*", "/", "(", ")", "<", ">"]:
+            elif mask1 in ["-", "+", "*", "/", "(", ")", "<", ">", "%"]:
                 self.position += 1
                 self.tokens.append(Token(self.KEYWORDS[mask1], mask1))
 

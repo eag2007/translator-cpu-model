@@ -16,6 +16,8 @@ class Compile:
         self.identifiers = set()
         self.ast = []
         self.label_count = 0
+        self.data = []
+
 
     """
     Загружает AST дерево expressions
@@ -32,6 +34,7 @@ class Compile:
     def __translate(self, ast_tree):
         for expression in ast_tree:
             self.__translate_expr(expression)
+        pprint(self.data)
         pprint(self.instructions)
 
     def __translate_expr(self, expression):
@@ -61,6 +64,9 @@ class Compile:
             else:
                 raise SyntaxError
 
+        if isinstance(expression, StringExpr):
+            self.__translate_expr_string(expression)
+
         if isinstance(expression, IfExpr):
             self.__translate_expr_if(expression)
 
@@ -73,10 +79,79 @@ class Compile:
         if isinstance(expression, IdentifierExpr):
             self.__translate_expr_ident(expression)
 
+        if isinstance(expression, WhileExpr):
+            self.__translate_expr_while(expression)
+
+        if isinstance(expression, RepeatExpr):
+            self.__translate_expr_repeat(expression)
+
+        if isinstance(expression, DefuncExpr):
+            self.__translate_expr_defunc(expression)
+
+        if isinstance(expression, FuncCallExpr):
+            self.__translate_expr_funcall(expression)
+
     def __new_label(self, prefix) -> str:
         label = f"{prefix}_{self.label_count}"
         self.label_count += 1
         return label
+
+    def __translate_expr_defunc(self, expression: DefuncExpr):
+        pass
+
+    def __translate_expr_funcall(self, expression: FuncCallExpr):
+        pass
+
+    def __translate_expr_repeat(self, expression: RepeatExpr):
+        label_check = self.__new_label("repeat_check")
+        label_loop = self.__new_label("repeat_loop")
+        label_end = self.__new_label("end")
+
+        self.__translate_expr(expression.count)
+        self.instructions += [
+            (label_check + ":",),
+            ("CMP", "#0"),
+            ("BEQ", label_end),
+            ("BGE", label_loop),
+            ("JUMP", label_end),
+            (label_loop + ":",),
+            ("PUSH",)
+        ]
+        for expr in expression.body:
+            self.__translate_expr(expr)
+        self.instructions += [
+            ("POP",),
+            ("SUB", "#1"),
+            ("JUMP", label_check),
+            (label_end + ":",)
+        ]
+
+
+    def __translate_expr_while(self, expression: WhileExpr):
+        label_loop = self.__new_label("loop")
+        label_end = self.__new_label("end")
+
+        self.instructions += [(label_loop + ":",)]
+        self.__translate_expr(expression.condition)
+        self.instructions += [
+            ("CMP", "#0"),
+            ("BEQ", label_end)
+        ]
+        for expr in expression.body:
+            self.__translate_expr(expr)
+        self.instructions += [
+            ("JUMP", label_loop),
+            (label_end + ":",)
+        ]
+
+    def __translate_expr_string(self, expression: StringExpr):
+        label_string = self.__new_label("string")
+
+        self.data += [(label_string + ":",)]
+        for symbol in expression.value:
+            self.data += [(".byte", str(ord(symbol)))]
+        self.data += [(".byte", str(00))]
+        self.instructions += [("LOAD", "?" + label_string)]
 
     def __translate_expr_if(self, expression: IfExpr):
         label_false = self.__new_label("if_false")
@@ -129,6 +204,8 @@ class Compile:
         self.instructions += [("PUSH",)]
         self.__translate_expr(expression.right)
         self.instructions += [
+            ("STORE", "$tmp$"),
+            ("POP",),
             ("CMP", "$tmp$"),
             ("BGE", label_false),
             ("LOAD", "#1"),
@@ -146,6 +223,8 @@ class Compile:
         self.instructions += [("PUSH",)]
         self.__translate_expr(expression.right)
         self.instructions += [
+            ("STORE", "$tmp$"),
+            ("POP",),
             ("CMP", "$tmp$"),
             ("BGE", label_true),
             ("LOAD", "#0"),
@@ -165,6 +244,8 @@ class Compile:
         self.__translate_expr(expression.right)
 
         self.instructions += [
+            ("STORE", "$tmp$"),
+            ("POP",),
             ("CMP", "$tmp$"),
             ("BEQ", label_true),
             ("BGE", label_false),
@@ -296,7 +377,7 @@ class Compile:
         self.identifiers.add('$tmp$')
 
         for identifier in self.identifiers:
-            self.instructions.append((identifier, '.word'))
+            self.data.append((identifier, '.word'))
 
     """
     Выбирает глобальные переменные из Expression выражений
