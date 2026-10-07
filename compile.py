@@ -1,13 +1,13 @@
-from enum import Enum, auto
+from enum import auto
 from pprint import pprint
 from parser import *
 
 
-class Command(Enum):
-    PUSH = auto()
-    POP = auto()
-    ADD = auto()
-    STORE = auto()
+class TypesAssembler:
+    LABEL = auto()
+    COMMAND_NOT_ADDRESS = auto()
+    COMMAND_ADDRESS = auto()
+    COMMAND_BRANCHING = auto()
 
 
 class Compile:
@@ -15,7 +15,15 @@ class Compile:
         self.instructions = []
         self.identifiers = set()
         self.ast = []
+        self.label_count = 0
 
+    """
+    Загружает AST дерево expressions
+    args:
+        Список выражений expressions
+    returns:
+        None
+    """
     def load_ast(self, ast: list[Expr]):
         self.ast = ast
         self.__select(self.ast)
@@ -38,66 +46,246 @@ class Compile:
                 self.__translate_expr_div(expression)
             elif expression.operation == "%":
                 self.__translate_expr_mod(expression)
+            elif expression.operation == ">":
+                self.__translate_expr_left(expression)
+            elif expression.operation == ">=":
+                self.__translate_expr_lefteq(expression)
+            elif expression.operation == "==":
+                self.__translate_expr_eq(expression)
+            elif expression.operation == "!=":
+                self.__translate_expr_not_eq(expression)
+            elif expression.operation == "<":
+                self.__translate_expr_right(expression)
+            elif expression.operation == "<=":
+                self.__translate_expr_righteq(expression)
             else:
                 raise SyntaxError
+
+        if isinstance(expression, IfExpr):
+            self.__translate_expr_if(expression)
 
         if isinstance(expression, NumberExpr):
             self.__translate_expr_number(expression)
 
+        if isinstance(expression, SetExpr):
+            self.__translate_expr_set(expression)
+
+        if isinstance(expression, IdentifierExpr):
+            self.__translate_expr_ident(expression)
+
+    def __new_label(self, prefix) -> str:
+        label = f"{prefix}_{self.label_count}"
+        self.label_count += 1
+        return label
+
+    def __translate_expr_if(self, expression: IfExpr):
+        label_false = self.__new_label("if_false")
+        label_end = self.__new_label("end")
+
+        self.__translate_expr(expression.condition)
+        self.instructions += [
+            ("CMP", "#0"),
+            ("BEQ", label_false)
+        ]
+        for expr in expression.body:
+            self.__translate_expr(expr)
+        self.instructions += [
+            ("JUMP", label_end),
+            (label_false + ":",)
+        ]
+
+        if not (expression.else_body is None):
+            for expr in expression.else_body:
+                self.__translate_expr(expr)
+        self.instructions += [(label_end + ":",)]
+
+    def __translate_expr_left(self, expression: BinaryExpr):
+        label_true = self.__new_label("left_true")
+        label_false = self.__new_label("left_false")
+        label_end = self.__new_label("end")
+
+        self.__translate_expr(expression.left)
+        self.instructions += [("PUSH",)]
+        self.__translate_expr(expression.right)
+        self.instructions += [
+            ("STORE", "$tmp$"),
+            ("POP",),
+            ("CMP", "$tmp$"),
+            ("BEQ", label_false),
+            ("BGE", label_true),
+            (label_false + ":",),
+            ("LOAD", "#0"),
+            ("JUMP", label_end),
+            (label_true + ":",),
+            ("LOAD", "#1"),
+            (label_end + ":",)
+        ]
+
+    def __translate_expr_right(self, expression: BinaryExpr):
+        label_false = self.__new_label("right_false")
+        label_end = self.__new_label("end")
+
+        self.__translate_expr(expression.left)
+        self.instructions += [("PUSH",)]
+        self.__translate_expr(expression.right)
+        self.instructions += [
+            ("CMP", "$tmp$"),
+            ("BGE", label_false),
+            ("LOAD", "#1"),
+            ("JUMP", label_end),
+            (label_false + ":",),
+            ("LOAD", "#0"),
+            (label_end + ":",)
+        ]
+
+    def __translate_expr_lefteq(self, expression: BinaryExpr):
+        label_true = self.__new_label("lefteq_true")
+        label_end = self.__new_label("end")
+
+        self.__translate_expr(expression.left)
+        self.instructions += [("PUSH",)]
+        self.__translate_expr(expression.right)
+        self.instructions += [
+            ("CMP", "$tmp$"),
+            ("BGE", label_true),
+            ("LOAD", "#0"),
+            ("JUMP", label_end),
+            (label_true + ":",),
+            ("LOAD", "#1"),
+            (label_end + ":",)
+        ]
+
+    def __translate_expr_righteq(self, expression: BinaryExpr):
+        label_true = self.__new_label("lefteq_true")
+        label_false = self.__new_label("lefteq_false")
+        label_end = self.__new_label("end")
+
+        self.__translate_expr(expression.left)
+        self.instructions += [("PUSH",)]
+        self.__translate_expr(expression.right)
+
+        self.instructions += [
+            ("CMP", "$tmp$"),
+            ("BEQ", label_true),
+            ("BGE", label_false),
+            (label_true + ":",),
+            ("LOAD", "#1"),
+            ("JUMP", label_end),
+            (label_false + ":",),
+            ("LOAD", "#0"),
+            (label_end + ":",)
+        ]
+
+    def __translate_expr_eq(self, expression: BinaryExpr):
+        label_true = self.__new_label("equal_true")
+        label_false = self.__new_label("equal_false")
+        label_end = self.__new_label("end")
+
+        self.__translate_expr(expression.left)
+        self.instructions += [("PUSH",)]
+        self.__translate_expr(expression.right)
+        self.instructions += [
+            ("STORE", "$tmp$"),
+            ("POP",),
+            ("CMP", "$tmp$"),
+            ("BEQ", label_true),
+            ("JUMP", label_false),
+            (label_true + ":",),
+            ("LOAD", "#1"),
+            ("JUMP", label_end),
+            (label_false + ":",),
+            ("LOAD", "#0"),
+            ("JUMP", label_end),
+            (label_end + ":",)
+        ]
+
+    def __translate_expr_not_eq(self, expression: BinaryExpr):
+        label_true = self.__new_label("not_equal_true")
+        label_false = self.__new_label("not_equal_false")
+        label_end = self.__new_label("end")
+
+        self.__translate_expr(expression.left)
+        self.instructions += [("PUSH",)]
+        self.__translate_expr(expression.right)
+        self.instructions += [
+            ("STORE", "$tmp$"),
+            ("POP",),
+            ("CMP", "$tmp$"),
+            ("BEQ", label_false),
+            ("JUMP", label_true),
+            (label_false + ":",),
+            ("LOAD", "#0"),
+            ("JUMP", label_end),
+            (label_true + ":",),
+            ("LOAD", "#1"),
+            (label_end + ":",)
+        ]
+
+    def __translate_expr_ident(self, expression: IdentifierExpr):
+        self.instructions += [("LOAD", expression.name)]
+
+    def __translate_expr_set(self, expression: SetExpr):
+        self.__translate_expr(expression.value)
+        self.instructions += [("STORE", f"{expression.target.name}")]
+
     def __translate_expr_number(self, expression: NumberExpr):
-        self.instructions.append(("LOAD", f"#{expression.value}"))
+        self.instructions += [("LOAD", f"#{expression.value}")]
 
     def __translate_expr_sum(self, expression: BinaryExpr):
         self.__translate_expr(expression.left)
-        self.instructions.append(("PUSH",))
+        self.instructions += [("PUSH",)]
         self.__translate_expr(expression.right)
-        self.instructions.append(("STORE", "$tmp$"))
-        self.instructions.append(("POP",))
-        self.instructions.append(("ADD", "$tmp$"))
-        return
+        self.instructions += [
+            ("STORE", "$tmp$"),
+            ("POP",),
+            ("ADD", "$tmp$")
+        ]
 
     def __translate_expr_sub(self, expression: BinaryExpr):
         self.__translate_expr(expression.left)
-        self.instructions.append(("PUSH",))
+        self.instructions += [("PUSH",)]
         self.__translate_expr(expression.right)
-        self.instructions.append(("STORE", "$tmp$"))
-        self.instructions.append(("POP",))
-        self.instructions.append(("SUB", "$tmp$"))
-        return
+        self.instructions += [
+            ("STORE", "$tmp$"),
+            ("POP",),
+            ("SUB", "$tmp$")
+        ]
 
     def __translate_expr_mul(self, expression: BinaryExpr):
         self.__translate_expr(expression.left)
-        self.instructions.append(("PUSH",))
+        self.instructions += [("PUSH",)]
         self.__translate_expr(expression.right)
-        self.instructions.append(("STORE", "$tmp$"))
-        self.instructions.append(("POP",))
-        self.instructions.append(("MUL", "$tmp$"))
-        return
+        self.instructions += [
+            ("STORE", "$tmp$"),
+            ("POP",),
+            ("MUL", "$tmp$")
+        ]
 
     def __translate_expr_div(self, expression: BinaryExpr):
         self.__translate_expr(expression.left)
-        self.instructions.append(("PUSH",))
+        self.instructions += [("PUSH",)]
         self.__translate_expr(expression.right)
-        self.instructions.append(("STORE", "$tmp$"))
-        self.instructions.append(("POP",))
-        self.instructions.append(("DIV", "$tmp$"))
-        return
+        self.instructions += [
+            ("STORE", "$tmp$"),
+            ("POP",),
+            ("DIV", "$tmp$")
+        ]
 
     def __translate_expr_mod(self, expression: BinaryExpr):
         self.__translate_expr(expression.left)
-        self.instructions.append(("PUSH",))
+        self.instructions += [("PUSH",)]
         self.__translate_expr(expression.right)
-        self.instructions.append(("STORE", "$tmp$"))
-        self.instructions.append(("POP",))
-        self.instructions.append(("MOD", "$tmp$"))
+        self.instructions += [
+            ("STORE", "$tmp$"),
+            ("POP",),
+            ("MOD", "$tmp$")
+        ]
         return
 
     """
     Создает список из глобальных переменных вычисленных из Expression выражений
-    
     args:
         ast_tree:   дерево выражений
-        
     returns:
         None
     """
@@ -112,11 +300,9 @@ class Compile:
 
     """
     Выбирает глобальные переменные из Expression выражений
-       
     args:
         expression: выражение
         is_global:  переменная флаг (отвечает за то является ли переменная локальной или глобальной)
-        
     returns:
         None
     """

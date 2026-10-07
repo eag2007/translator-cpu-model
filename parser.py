@@ -252,7 +252,7 @@ class Parser:
 
         self.__get_token()  # закрыть аргументы
 
-        is_closing = self.__get_token()     # закрыть вызов
+        is_closing = self.__get_token()  # закрыть вызов
 
         if is_closing.type != TokenType.RBRACKET:
             raise SyntaxError("Нет закрывающей скобки при вызове функции")
@@ -280,7 +280,7 @@ class Parser:
 
             params.append(IdentifierExpr(param.value))
 
-        self.__get_token() # закрыть (a, ...)
+        self.__get_token()  # закрыть (a, ...)
 
         body = self.__parse_body()
         is_closing = self.__get_token()

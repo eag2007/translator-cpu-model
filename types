@@ -27,3 +27,9 @@ print_char
 >
 <=
 >=
+
+BEQ - if Z == 1
+BGE - if (N + V) % 2 == 0
+BMI - if N == 1
+BCS - if C == 1
+BVS - if V == 1
