@@ -17,7 +17,9 @@ class Compile:
         self.ast = []
         self.label_count = 0
         self.data = []
-
+        self.functions = {}
+        self.stack_depth = 0
+        self.stack_ident = {}
 
     """
     Загружает AST дерево expressions
@@ -26,10 +28,25 @@ class Compile:
     returns:
         None
     """
+
     def load_ast(self, ast: list[Expr]):
         self.ast = ast
         self.__select(self.ast)
         self.__translate(self.ast)
+
+    def __push(self):
+        self.instructions += [("PUSH",)]
+        self.stack_depth -= 4
+
+    def __pop(self):
+        self.instructions += [("POP",)]
+        self.stack_depth += 4
+
+    def __variable_address(self, name):
+        if name in self.stack_ident:
+            offset = self.stack_ident[name] - self.stack_depth
+            return f"[{offset}]"
+        return name
 
     def __translate(self, ast_tree):
         for expression in ast_tree:
@@ -96,11 +113,111 @@ class Compile:
         self.label_count += 1
         return label
 
+    def __see_local_variable(self, expr):
+        if isinstance(expr, DefuncExpr):
+            return
+
+        if isinstance(expr, SetExpr):
+            name = expr.target.name
+
+            if name not in self.stack_ident:
+                self.__push()
+                self.stack_ident[name] = self.stack_depth + 4
+
+            self.__see_local_variable(expr.value)
+        elif isinstance(expr, BinaryExpr):
+            self.__see_local_variable(expr.left)
+            self.__see_local_variable(expr.right)
+
+        elif isinstance(expr, IfExpr):
+            self.__see_local_variable(expr.condition)
+
+            for item in expr.body:
+                self.__see_local_variable(item)
+
+            if expr.else_body is not None:
+                for item in expr.else_body:
+                    self.__see_local_variable(item)
+
+        elif isinstance(expr, WhileExpr):
+            self.__see_local_variable(expr.condition)
+
+            for item in expr.body:
+                self.__see_local_variable(item)
+
+        elif isinstance(expr, RepeatExpr):
+            self.__see_local_variable(expr.count)
+
+            for item in expr.body:
+                self.__see_local_variable(item)
+
+        elif isinstance(expr, FuncCallExpr):
+            for arg in expr.args:
+                self.__see_local_variable(arg)
+
+        elif isinstance(expr, (PrintExpr, PrintChrExpr)):
+            self.__see_local_variable(expr.value)
+
+    def __create_memory_for_local_variables(self, funcexpr: DefuncExpr):
+        for expr in funcexpr.body:
+            self.__see_local_variable(expr)
+
     def __translate_expr_defunc(self, expression: DefuncExpr):
-        pass
+        label_function = f"$func_{expression.name}"
+        label_end = self.__new_label("end")
+
+        external_ident = self.stack_ident
+        external_depth = self.stack_depth
+
+        self.stack_ident = {}
+        self.stack_depth = 0
+
+        count_params = len(expression.params)
+
+        for index, param in enumerate(expression.params):
+            self.stack_ident[param.name] = (count_params - index + 1) * 4
+
+        self.instructions += [
+            ("JUMP", label_end),
+            (label_function + ":",),
+            ("LOAD", "#0")
+        ]
+
+        self.__create_memory_for_local_variables(expression)
+        local_count = -self.stack_depth // 4
+
+        for expr in expression.body:
+            self.__translate_expr(expr)
+
+        if local_count:
+            self.instructions += [("STORE", "$tmp$")]
+
+            for delete_variable in range(local_count):
+                self.__pop()
+
+            self.instructions += [("LOAD", "$tmp$")]
+
+        self.instructions += [
+            ("RET",),
+            (label_end + ":",)
+        ]
+
+        self.stack_ident = external_ident
+        self.stack_depth = external_depth
 
     def __translate_expr_funcall(self, expression: FuncCallExpr):
-        pass
+        for arg in expression.args:
+            self.__translate_expr(arg)
+            self.__push()
+
+        self.instructions += [("CALL", f"$func_{expression.name}")]
+        if expression.args:
+            self.instructions += [("STORE", "$tmp$")]
+
+            for _ in expression.args:
+                self.__pop()
+
+            self.instructions += [("LOAD", "$tmp$")]
 
     def __translate_expr_repeat(self, expression: RepeatExpr):
         label_check = self.__new_label("repeat_check")
@@ -115,17 +232,16 @@ class Compile:
             ("BGE", label_loop),
             ("JUMP", label_end),
             (label_loop + ":",),
-            ("PUSH",)
         ]
+        self.__push()
         for expr in expression.body:
             self.__translate_expr(expr)
+        self.__pop()
         self.instructions += [
-            ("POP",),
             ("SUB", "#1"),
             ("JUMP", label_check),
             (label_end + ":",)
         ]
-
 
     def __translate_expr_while(self, expression: WhileExpr):
         label_loop = self.__new_label("loop")
@@ -180,11 +296,11 @@ class Compile:
         label_end = self.__new_label("end")
 
         self.__translate_expr(expression.left)
-        self.instructions += [("PUSH",)]
+        self.__push()
         self.__translate_expr(expression.right)
+        self.instructions += [("STORE", "$tmp$")]
+        self.__pop()
         self.instructions += [
-            ("STORE", "$tmp$"),
-            ("POP",),
             ("CMP", "$tmp$"),
             ("BEQ", label_false),
             ("BGE", label_true),
@@ -201,11 +317,11 @@ class Compile:
         label_end = self.__new_label("end")
 
         self.__translate_expr(expression.left)
-        self.instructions += [("PUSH",)]
+        self.__push()
         self.__translate_expr(expression.right)
+        self.instructions += [("STORE", "$tmp$")]
+        self.__pop()
         self.instructions += [
-            ("STORE", "$tmp$"),
-            ("POP",),
             ("CMP", "$tmp$"),
             ("BGE", label_false),
             ("LOAD", "#1"),
@@ -220,11 +336,11 @@ class Compile:
         label_end = self.__new_label("end")
 
         self.__translate_expr(expression.left)
-        self.instructions += [("PUSH",)]
+        self.__push()
         self.__translate_expr(expression.right)
+        self.instructions += [("STORE", "$tmp$")]
+        self.__pop()
         self.instructions += [
-            ("STORE", "$tmp$"),
-            ("POP",),
             ("CMP", "$tmp$"),
             ("BGE", label_true),
             ("LOAD", "#0"),
@@ -240,12 +356,12 @@ class Compile:
         label_end = self.__new_label("end")
 
         self.__translate_expr(expression.left)
-        self.instructions += [("PUSH",)]
+        self.__push()
         self.__translate_expr(expression.right)
 
+        self.instructions += [("STORE", "$tmp$")]
+        self.__pop()
         self.instructions += [
-            ("STORE", "$tmp$"),
-            ("POP",),
             ("CMP", "$tmp$"),
             ("BEQ", label_true),
             ("BGE", label_false),
@@ -263,11 +379,12 @@ class Compile:
         label_end = self.__new_label("end")
 
         self.__translate_expr(expression.left)
-        self.instructions += [("PUSH",)]
+        self.__push()
         self.__translate_expr(expression.right)
         self.instructions += [
-            ("STORE", "$tmp$"),
-            ("POP",),
+            ("STORE", "$tmp$")]
+        self.__pop()
+        self.instructions += [
             ("CMP", "$tmp$"),
             ("BEQ", label_true),
             ("JUMP", label_false),
@@ -286,11 +403,11 @@ class Compile:
         label_end = self.__new_label("end")
 
         self.__translate_expr(expression.left)
-        self.instructions += [("PUSH",)]
+        self.__push()
         self.__translate_expr(expression.right)
+        self.instructions += [("STORE", "$tmp$")]
+        self.__pop()
         self.instructions += [
-            ("STORE", "$tmp$"),
-            ("POP",),
             ("CMP", "$tmp$"),
             ("BEQ", label_false),
             ("JUMP", label_true),
@@ -303,65 +420,56 @@ class Compile:
         ]
 
     def __translate_expr_ident(self, expression: IdentifierExpr):
-        self.instructions += [("LOAD", expression.name)]
+        address = self.__variable_address(expression.name)
+        self.instructions += [("LOAD", address)]
 
     def __translate_expr_set(self, expression: SetExpr):
         self.__translate_expr(expression.value)
-        self.instructions += [("STORE", f"{expression.target.name}")]
+        address = self.__variable_address(expression.target.name)
+        self.instructions += [("STORE", address)]
 
     def __translate_expr_number(self, expression: NumberExpr):
         self.instructions += [("LOAD", f"#{expression.value}")]
 
     def __translate_expr_sum(self, expression: BinaryExpr):
         self.__translate_expr(expression.left)
-        self.instructions += [("PUSH",)]
+        self.__push()
         self.__translate_expr(expression.right)
-        self.instructions += [
-            ("STORE", "$tmp$"),
-            ("POP",),
-            ("ADD", "$tmp$")
-        ]
+        self.instructions += [("STORE", "$tmp$")]
+        self.__pop()
+        self.instructions += [("ADD", "$tmp$")]
 
     def __translate_expr_sub(self, expression: BinaryExpr):
         self.__translate_expr(expression.left)
-        self.instructions += [("PUSH",)]
+        self.__push()
         self.__translate_expr(expression.right)
-        self.instructions += [
-            ("STORE", "$tmp$"),
-            ("POP",),
-            ("SUB", "$tmp$")
-        ]
+        self.instructions += [("STORE", "$tmp$")]
+        self.__pop()
+        self.instructions += [("SUB", "$tmp$")]
 
     def __translate_expr_mul(self, expression: BinaryExpr):
         self.__translate_expr(expression.left)
-        self.instructions += [("PUSH",)]
+        self.__push()
         self.__translate_expr(expression.right)
-        self.instructions += [
-            ("STORE", "$tmp$"),
-            ("POP",),
-            ("MUL", "$tmp$")
-        ]
+        self.instructions += [("STORE", "$tmp$")]
+        self.__pop()
+        self.instructions += [("MUL", "$tmp$")]
 
     def __translate_expr_div(self, expression: BinaryExpr):
         self.__translate_expr(expression.left)
-        self.instructions += [("PUSH",)]
+        self.__push()
         self.__translate_expr(expression.right)
-        self.instructions += [
-            ("STORE", "$tmp$"),
-            ("POP",),
-            ("DIV", "$tmp$")
-        ]
+        self.instructions += [("STORE", "$tmp$")]
+        self.__pop()
+        self.instructions += [("DIV", "$tmp$")]
 
     def __translate_expr_mod(self, expression: BinaryExpr):
         self.__translate_expr(expression.left)
-        self.instructions += [("PUSH",)]
+        self.__push()
         self.__translate_expr(expression.right)
-        self.instructions += [
-            ("STORE", "$tmp$"),
-            ("POP",),
-            ("MOD", "$tmp$")
-        ]
-        return
+        self.instructions += [("STORE", "$tmp$")]
+        self.__pop()
+        self.instructions += [("MOD", "$tmp$")]
 
     """
     Создает список из глобальных переменных вычисленных из Expression выражений
@@ -370,6 +478,7 @@ class Compile:
     returns:
         None
     """
+
     def __select(self, ast_tree):
         for element_ast in ast_tree:
             self.__select_identifiers(element_ast, True)
@@ -387,6 +496,7 @@ class Compile:
     returns:
         None
     """
+
     def __select_identifiers(self, expression: Expr, is_global: bool):
         if isinstance(expression, SetExpr) and is_global:
             self.identifiers.add(expression.target.name)
