@@ -10,13 +10,13 @@ lexer = Lexer()
 lexer.load_source(s)
 
 tokens = lexer.get_tokens()
-pprint(tokens)
+# pprint(tokens)
 
 parser = Parser()
 parser.load_tokens(tokens)
 
 ast_tree = parser.parse()
-pprint(ast_tree)
+# pprint(ast_tree)
 
 
 compilator = Compile()

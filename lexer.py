@@ -3,6 +3,7 @@ from enum import Enum, auto
 
 
 class TokenType(Enum):
+    """Класс Enum содержащий все типы морфем в языке"""
     LBRACKET = auto()
     RBRACKET = auto()
 
@@ -38,6 +39,10 @@ class TokenType(Enum):
 
 @dataclass
 class Token:
+    """Класс токен - минимальная единициа, хранит в себе тип морфемы и эту морфему
+        :var type:      одно из значений типов enum
+        :var value:     сама морфема
+    """
     type: TokenType
     value: object
 
@@ -46,6 +51,8 @@ class Token:
 
 
 class Lexer:
+    """Класс lexer разбивает текст на последовательность токенов морфем"""
+
     NUMBER_PATTERN = r"-?\d+"
     STRING_PATTERN = r'"[^"\\]*(?:\\.[^"\\]*)*"'
     IDENTIFIER_PATTERN = r"[a-zA-Z_][a-zA-Z0-9_]*"
@@ -80,12 +87,21 @@ class Lexer:
     }
 
     def __init__(self) -> None:
+        """Инициализация полей лексера
+            :var self.source:               исходные данные (строка текста)
+            :var self.len_source:           длина исходных данных
+            :var self.position:             текущая позиция в исходных данных
+            :var self.tokens:               список токенов полученных после разбиения
+        """
         self.source: str = ""
         self.len_source: int = 0
         self.position: int = 0
         self.tokens: list[Token] = []
 
     def __made_tokens(self) -> None:
+        """Парсит текст и создает токены
+            :return None
+        """
         while self.position < self.len_source:
             mask1 = self.source[self.position]
             mask2 = self.source[self.position:self.position + 2]
@@ -169,9 +185,16 @@ class Lexer:
                 self.position += 1
 
     def get_tokens(self) -> list[Token]:
+        """Метод получения списка токенов
+            :return self.tokens:        список токенов
+        """
         return self.tokens
 
     def load_source(self, source: str) -> None:
+        """Загружает ресурсы и запускает процесс создания токенов
+            :param source:              исходные данные в виде строки
+            :return None
+        """
         self.source = source
         self.len_source = len(source)
         self.position = 0
