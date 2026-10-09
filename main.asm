@@ -1,5 +1,5 @@
-x           .word    ?
 $tmp$       .word    ?
+x           .word    ?
 string_0:
 .byte       105
 .byte       107

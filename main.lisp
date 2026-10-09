@@ -2,31 +2,31 @@
 
 (input)
 
-(print "hello")
+(print_string "hello")
 
-(printchr 65)
+(print_number 65)
 
 (if (> x 10)
     (
-        (print "big")
+        (print_string "big")
     )
     (else
         (
-            (print "small")
+            (print_string "small")
         )
     )
 )
 
 (while (> x 0)
     (
-        (print x)
+        (print_number x)
         (set x (- x 1))
     )
 )
 
 (repeat 3
     (
-        (print "hello")
+        (print_string "hello")
     )
 )
 

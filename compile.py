@@ -193,7 +193,7 @@ class Compile:
             for arg in expr.args:
                 self.__see_local_variable(arg)
 
-        elif isinstance(expr, (PrintExpr, PrintChrExpr)):
+        elif isinstance(expr, (PrintNumberExpr, PrintStringExpr)):
             self.__see_local_variable(expr.value)
 
     def __create_memory_for_local_variables(self, funcexpr: DefuncExpr):
