@@ -3,7 +3,7 @@ from lexer import Lexer
 from parser import Parser
 from pprint import pprint
 
-with open("test.lisp", "r") as f:
+with open("t.lisp", "r") as f:
     s = f.read()
 
 lexer = Lexer()

@@ -660,11 +660,11 @@ class Compile:
                 self.__select_identifiers(_expression, is_global)
             return
 
-        if isinstance(expression, PrintExpr):
+        if isinstance(expression, PrintStringExpr):
             self.__select_identifiers(expression.value, is_global)
             return
 
-        if isinstance(expression, PrintChrExpr):
+        if isinstance(expression, PrintNumberExpr):
             self.__select_identifiers(expression.value, is_global)
             return
         return

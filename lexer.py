@@ -20,8 +20,8 @@ class TokenType(Enum):
     FUNCALL = auto()
 
     INPUT = auto()
-    PRINT = auto()
-    PRINTCHR = auto()
+    PRINT_STRING = auto()
+    PRINT_NUMBER = auto()
 
     PLUS = auto()
     MINUS = auto()
@@ -71,8 +71,8 @@ class Lexer:
         "repeat": TokenType.REPEAT,
         "funcall": TokenType.FUNCALL,
         "input": TokenType.INPUT,
-        "print": TokenType.PRINT,
-        "printchr": TokenType.PRINTCHR,
+        "print_string": TokenType.PRINT_STRING,
+        "print_number": TokenType.PRINT_NUMBER,
         "+": TokenType.PLUS,
         "-": TokenType.MINUS,
         "*": TokenType.MULT,
@@ -110,7 +110,7 @@ class Lexer:
             mask5 = self.source[self.position:self.position + 5]
             mask6 = self.source[self.position:self.position + 6]
             mask7 = self.source[self.position:self.position + 7]
-            mask8 = self.source[self.position:self.position + 8]
+            mask12 = self.source[self.position:self.position + 12]
 
             if mask1 in [" ", "\t", "\n"]:
                 self.position += 1
@@ -141,11 +141,11 @@ class Lexer:
                 self.position += 4
                 self.tokens.append(Token(self.KEYWORDS[mask4], mask4))
 
-            elif mask8 in ["printchr"]:
-                self.position += 8
-                self.tokens.append(Token(self.KEYWORDS[mask8], mask8))
+            elif mask12 in ["print_string", "print_number"]:
+                self.position += 12
+                self.tokens.append(Token(self.KEYWORDS[mask12], mask12))
 
-            elif mask5 in ["while", "print", "input"]:
+            elif mask5 in ["while", "input"]:
                 self.position += 5
                 self.tokens.append(Token(self.KEYWORDS[mask5], mask5))
 

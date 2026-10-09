@@ -111,12 +111,14 @@ class InputExpr(Expr):
 
 
 @dataclass
-class PrintExpr(Expr):
+class PrintStringExpr(Expr):
+    """Класс выражения вывода строки"""
     value: Expr
 
 
 @dataclass
-class PrintChrExpr(Expr):
+class PrintNumberExpr(Expr):
+    """Класс выражения вывода числа"""
     value: Expr
 
 
@@ -197,11 +199,11 @@ class Parser:
             elif token.type == TokenType.INPUT:
                 return self.__parse_input(token)
 
-            elif token.type == TokenType.PRINT:
-                return self.__parse_print(token)
+            elif token.type == TokenType.PRINT_STRING:
+                return self.__parse_print_string(token)
 
-            elif token.type == TokenType.PRINTCHR:
-                return self.__parse_printchr(token)
+            elif token.type == TokenType.PRINT_NUMBER:
+                return self.__parse_print_number(token)
 
             elif token.type == TokenType.IF:
                 return self.__parse_if(token)
@@ -265,9 +267,9 @@ class Parser:
             raise SyntaxError(f"Скобка не закрыта")
         return InputExpr()
 
-    def __parse_print(self, _) -> PrintExpr:
-        """Разбирает выводимое значение и проверяет закрывающую скобку
-            :var _:                     токен print, не используется
+    def __parse_print_string(self, _) -> PrintStringExpr:
+        """Разбирает выводимую строку и проверяет закрывающую скобку
+            :var _:                     токен print_string, не используется
             :return PrintExpr:          выражение вывода значения
         """
         value = self.__parse_expr()
@@ -276,11 +278,11 @@ class Parser:
         if is_closing.type != TokenType.RBRACKET:
             raise SyntaxError(f"Скобка не закрыта")
 
-        return PrintExpr(value)
+        return PrintStringExpr(value)
 
-    def __parse_printchr(self, _) -> PrintChrExpr:
-        """Разбирает код выводимого символа и проверяет закрывающую скобку
-            :var _:                     токен printchr, не используется
+    def __parse_print_number(self, _) -> PrintNumberExpr:
+        """Разбирает код выводимого числа и проверяет закрывающую скобку
+            :var _:                     токен print_number, не используется
             :return PrintChrExpr:       выражение вывода символа
         """
         value = self.__parse_expr()
@@ -289,7 +291,7 @@ class Parser:
         if is_closing.type != TokenType.RBRACKET:
             raise SyntaxError(f"Скобка не закрыта")
 
-        return PrintChrExpr(value)
+        return PrintNumberExpr(value)
 
     def __parse_if(self, _) -> IfExpr:
         """Разбирает условие, тело if и блок else при его наличии
