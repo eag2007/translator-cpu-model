@@ -8,6 +8,47 @@ class Expr:
 
 
 @dataclass
+class StringAllocExpr(Expr):
+    size: Expr
+
+
+@dataclass
+class GetCharExpr(Expr):
+    address: Expr
+    index: Expr
+
+
+@dataclass
+class SetCharExpr(Expr):
+    address: Expr
+    index: Expr
+    value: Expr
+
+
+@dataclass
+class PrintCharExpr(Expr):
+    value: Expr
+
+
+@dataclass
+class ArrayExpr(Expr):
+    size: Expr
+
+
+@dataclass
+class ArrayGetExpr(Expr):
+    address: Expr
+    index: Expr
+
+
+@dataclass
+class ArraySetExpr(Expr):
+    address: Expr
+    index: Expr
+    value: Expr
+
+
+@dataclass
 class NumberExpr(Expr):
     """Класс выражения числа
         :var value:         число
@@ -106,8 +147,10 @@ class DefuncExpr(Expr):
 
 @dataclass
 class InputExpr(Expr):
-    """Класс выражения ввода значения"""
-    pass
+    """Класс выражения ввода значения
+        :var size: размер считываемой строки или None для 32-битного числа
+    """
+    size: Expr | None
 
 
 @dataclass
@@ -220,6 +263,27 @@ class Parser:
             elif token.type == TokenType.FUNCALL:
                 return self.__parse_funcall(token)
 
+            elif token.type == TokenType.ARRAY:
+                return self.__parse_array(token)
+
+            elif token.type == TokenType.AGET:
+                return self.__parse_aget(token)
+
+            elif token.type == TokenType.ASET:
+                return self.__parse_aset(token)
+
+            elif token.type == TokenType.STRING_ALLOC:
+                return self.__parse_string_alloc(token)
+
+            elif token.type == TokenType.GETCHAR:
+                return self.__parse_getchar(token)
+
+            elif token.type == TokenType.SETCHAR:
+                return self.__parse_setchar(token)
+
+            elif token.type == TokenType.PRINT_CHAR:
+                return self.__parse_print_char(token)
+
             raise SyntaxError(f"Неизвестное выражение: {token}")
         raise SyntaxError(f"Неизвестное выражение: {token}")
 
@@ -261,11 +325,27 @@ class Parser:
             :var _:                     токен input, не используется
             :return InputExpr:          выражение ввода значения
         """
+
+        if self.tokens[self.position].type == TokenType.RBRACKET:
+            self.__get_token()
+            return InputExpr(None)
+
+        opening = self.__get_token()
+        if opening.type != TokenType.LSBRACKET:
+            raise SyntaxError("Ожидалась квадратная скобка")
+
+        size = self.__parse_expr()
+        closing = self.__get_token()
+
+        if closing.type != TokenType.RSBRACKET:
+            raise SyntaxError("Квадратная скобка не закрыта")
+
         is_closing = self.__get_token()
 
         if is_closing.type != TokenType.RBRACKET:
-            raise SyntaxError(f"Скобка не закрыта")
-        return InputExpr()
+            raise SyntaxError("Скобка input не закрыта")
+
+        return InputExpr(size)
 
     def __parse_print_string(self, _) -> PrintStringExpr:
         """Разбирает выводимую строку и проверяет закрывающую скобку
@@ -376,7 +456,7 @@ class Parser:
 
             params.append(IdentifierExpr(param.value))
 
-        self.__get_token()  # закрыть (a, ...)
+        self.__get_token()  # закрыть параметры (a, ...)
 
         body = self.__parse_body()
         is_closing = self.__get_token()
@@ -435,3 +515,72 @@ class Parser:
             raise SyntaxError(f"Скобка блока не закрыта")
 
         return body
+
+    def __parse_array(self, _) -> ArrayExpr:
+        size = self.__parse_expr()
+        is_closing = self.__get_token()
+
+        if is_closing.type != TokenType.RBRACKET:
+            raise SyntaxError("Скобка array не закрыта")
+
+        return ArrayExpr(size)
+
+    def __parse_aget(self, _) -> ArrayGetExpr:
+        address = self.__parse_expr()
+        index = self.__parse_expr()
+        is_closing = self.__get_token()
+
+        if is_closing.type != TokenType.RBRACKET:
+            raise SyntaxError("Скобка aget не закрыта")
+
+        return ArrayGetExpr(address, index)
+
+    def __parse_aset(self, _) -> ArraySetExpr:
+        address = self.__parse_expr()
+        index = self.__parse_expr()
+        value = self.__parse_expr()
+        is_closing = self.__get_token()
+
+        if is_closing.type != TokenType.RBRACKET:
+            raise SyntaxError("Скобка aset не закрыта")
+
+        return ArraySetExpr(address, index, value)
+
+    def __parse_string_alloc(self, _) -> StringAllocExpr:
+        size = self.__parse_expr()
+        is_closing = self.__get_token()
+
+        if is_closing.type != TokenType.RBRACKET:
+            raise SyntaxError("Скобка string не закрыта")
+
+        return StringAllocExpr(size)
+
+    def __parse_getchar(self, _) -> GetCharExpr:
+        address = self.__parse_expr()
+        index = self.__parse_expr()
+        is_closing = self.__get_token()
+
+        if is_closing.type != TokenType.RBRACKET:
+            raise SyntaxError("Скобка getchar не закрыта")
+
+        return GetCharExpr(address, index)
+
+    def __parse_setchar(self, _) -> SetCharExpr:
+        address = self.__parse_expr()
+        index = self.__parse_expr()
+        value = self.__parse_expr()
+        is_closing = self.__get_token()
+
+        if is_closing.type != TokenType.RBRACKET:
+            raise SyntaxError("Скобка setchar не закрыта")
+
+        return SetCharExpr(address, index, value)
+
+    def __parse_print_char(self, _) -> PrintCharExpr:
+        value = self.__parse_expr()
+        is_closing = self.__get_token()
+
+        if is_closing.type != TokenType.RBRACKET:
+            raise SyntaxError("Скобка print_char не закрыта")
+
+        return PrintCharExpr(value)

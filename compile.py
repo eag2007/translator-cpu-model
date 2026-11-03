@@ -16,7 +16,7 @@ class Compile:
             :var self.stack_ident:      словарь локальных переменных функции и их адресов в стеке
                 (a: -12, b: -8)
         """
-        self.instructions = []
+        self.instructions = [("_start:",)]
         self.identifiers = set()
         self.ast = []
         self.label_count = 0
@@ -33,6 +33,7 @@ class Compile:
         self.ast = ast
         self.__select(self.ast)
         self.__translate(self.ast)
+        self.instructions += [("HALT", )]
         self.save_asm()
 
     def save_asm(self):
@@ -41,13 +42,13 @@ class Compile:
         """
         with open("main.asm", "w") as f:
             for i in self.data:
-                print(f"{i[0]:<12}{'    '.join(i[1:])}".rstrip(), file=f)
+                print(f"{i[0]:<16} {' '.join(i[1:])}".rstrip(), file=f)
 
             for i in self.instructions:
                 if i[0].endswith(":"):
                     print(i[0], file=f)
                 else:
-                    print(f"    {i[0]:<8}{' '.join(i[1:])}".rstrip(), file=f)
+                    print(f"    {i[0]:<8} {' '.join(i[1:])}".rstrip(), file=f)
 
     def __push(self):
         """Кладет значение из ACC в верхушку стека, меняет глубину стека
@@ -138,6 +139,24 @@ class Compile:
         if isinstance(expression, FuncCallExpr):
             self.__translate_expr_funcall(expression)
 
+        if isinstance(expression, ArrayExpr):
+            self.__translate_expr_array(expression)
+
+        if isinstance(expression, ArrayGetExpr):
+            self.__translate_expr_array_get(expression)
+
+        if isinstance(expression, ArraySetExpr):
+            self.__translate_expr_array_set(expression)
+
+        if isinstance(expression, StringAllocExpr):
+            self.__translate_expr_string_alloc(expression)
+
+        if isinstance(expression, SetCharExpr):
+            self.__translate_expr_set_char(expression)
+
+        if isinstance(expression, GetCharExpr):
+            self.__translate_expr_get_char(expression)
+
     def __new_label(self, prefix) -> str:
         """Создает новую уникальную метку
             :param prefix:      название метки
@@ -193,7 +212,19 @@ class Compile:
             for arg in expr.args:
                 self.__see_local_variable(arg)
 
-        elif isinstance(expr, (PrintNumberExpr, PrintStringExpr)):
+        elif isinstance(expr, (PrintNumberExpr, PrintStringExpr, PrintCharExpr)):
+            self.__see_local_variable(expr.value)
+
+        elif isinstance(expr, (ArrayExpr, StringAllocExpr)):
+            self.__see_local_variable(expr.size)
+
+        elif isinstance(expr, (ArrayGetExpr, GetCharExpr)):
+            self.__see_local_variable(expr.index)
+            self.__see_local_variable(expr.address)
+
+        elif isinstance(expr, (ArraySetExpr, SetCharExpr)):
+            self.__see_local_variable(expr.address)
+            self.__see_local_variable(expr.index)
             self.__see_local_variable(expr.value)
 
     def __create_memory_for_local_variables(self, funcexpr: DefuncExpr):
@@ -593,6 +624,118 @@ class Compile:
         self.__pop()
         self.instructions += [("MOD", "$tmp$")]
 
+    def __translate_expr_array(self, expression: ArrayExpr):
+        size = expression.size.value
+        label_array = self.__new_label("array")
+        self.data += [(label_array + ":",)]
+
+        for _ in range(size):
+            self.data += [(".word", "0")]
+
+        self.instructions += [("LOAD", "?" + label_array)]
+
+    def __translate_expr_array_get(self, expression: ArrayGetExpr):
+        address = expression.address
+        index = expression.index
+
+        self.__translate_expr(address)
+        self.__push()
+        self.__translate_expr(index)
+        self.instructions += [
+            ("MUL", "#4"),
+            ("STORE", "$tmp$")
+        ]
+        self.__pop()
+        self.instructions += [
+            ("ADD", "$tmp$"),
+            ("STORE", "$tmp$"),
+            ("LOAD", "@$tmp$")
+        ]
+
+    def __translate_expr_array_set(self, expression: ArraySetExpr):
+        address = expression.address
+        index = expression.index
+        value = expression.value
+
+        self.__translate_expr(address)
+        self.__push()
+        self.__translate_expr(index)
+        self.instructions += [
+            ("MUL", "#4"),
+            ("STORE", "$tmp$")
+        ]
+        self.__pop()
+        self.instructions += [
+            ("ADD", "$tmp$")
+        ]
+        self.__push()
+        self.__translate_expr(value)
+
+        self.instructions += [("STORE", "$tmp$")]
+        self.__pop()
+        self.instructions += [
+            ("STORE", "$tmp_address$"),
+            ("LOAD", "$tmp$"),
+            ("STORE", "@$tmp_address$")
+        ]
+
+    def __translate_expr_string_alloc(self, expression: StringAllocExpr):
+        size = expression.size.value
+        label_string = self.__new_label("string")
+        self.data += [(label_string + ":",)]
+
+        for i in range(size):
+            self.data += [(".byte", "0")]
+        self.data += [(".byte", "0")]
+
+        self.instructions += [("LOAD", f"?{label_string}")]
+
+    def __translate_expr_get_char(self, expression: GetCharExpr):
+        address = expression.address
+        index = expression.index
+
+        self.__translate_expr(address)
+        self.__push()
+        self.__translate_expr(index)
+
+        self.instructions += [("STORE", "$tmp$")]
+        self.__pop()
+
+        self.instructions += [
+            ("ADD", "$tmp$"),
+            ("STORE", "$tmp$"),
+            ("LOAD.b", "@$tmp$")
+        ]
+
+    def __translate_expr_set_char(self, expression: SetCharExpr):
+        address = expression.address
+        index = expression.index
+        value = expression.value
+
+        self.__translate_expr(address)
+        self.__push()
+        self.__translate_expr(index)
+
+        self.instructions += [("STORE", "$tmp$")]
+
+        self.__pop()
+
+        self.instructions += [
+            ("ADD", "$tmp$")
+        ]
+
+        self.__push()
+        self.__translate_expr(value)
+
+        self.instructions += [("STORE", "$tmp$")]
+        self.__pop()
+
+        self.instructions += [
+            ("STORE", "$tmp_address$"),
+            ("LOAD", "$tmp$"),
+            ("STORE.b", "@$tmp_address$")
+        ]
+
     def __select(self, ast_tree):
         """Создает список из глобальных переменных вычисленных из Expression выражений
             :param ast_tree:   дерево выражений
@@ -602,6 +745,7 @@ class Compile:
             self.__select_identifiers(element_ast, True)
 
         self.identifiers.add('$tmp$')
+        self.identifiers.add("$tmp_address$")
 
         for identifier in self.identifiers:
             self.data.append((identifier, '.word', "?"))
@@ -667,4 +811,20 @@ class Compile:
         if isinstance(expression, PrintNumberExpr):
             self.__select_identifiers(expression.value, is_global)
             return
+
+        if isinstance(expression, PrintCharExpr):
+            self.__select_identifiers(expression.value, is_global)
+            return
+
+        if isinstance(expression, (ArraySetExpr, SetCharExpr)):
+            self.__select_identifiers(expression.value, is_global)
+            self.__select_identifiers(expression.index, is_global)
+            self.__select_identifiers(expression.address, is_global)
+
+        if isinstance(expression, (ArrayGetExpr, GetCharExpr)):
+            self.__select_identifiers(expression.index, is_global)
+            self.__select_identifiers(expression.address, is_global)
+
+        if isinstance(expression, (ArrayExpr, StringAllocExpr)):
+            self.__select_identifiers(expression.size, is_global)
         return

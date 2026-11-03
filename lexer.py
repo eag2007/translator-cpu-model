@@ -23,6 +23,15 @@ class TokenType(Enum):
     PRINT_STRING = auto()
     PRINT_NUMBER = auto()
 
+    ARRAY = auto()
+    AGET = auto()
+    ASET = auto()
+
+    STRING_ALLOC = auto()
+    GETCHAR = auto()
+    SETCHAR = auto()
+    PRINT_CHAR = auto()
+
     PLUS = auto()
     MINUS = auto()
     MULT = auto()
@@ -35,6 +44,9 @@ class TokenType(Enum):
     RIGHT = auto()
     LEFTEQ = auto()
     RIGHTEQ = auto()
+
+    LSBRACKET = auto()
+    RSBRACKET = auto()
 
 
 @dataclass
@@ -73,6 +85,13 @@ class Lexer:
         "input": TokenType.INPUT,
         "print_string": TokenType.PRINT_STRING,
         "print_number": TokenType.PRINT_NUMBER,
+        "array": TokenType.ARRAY,
+        "aget": TokenType.AGET,
+        "aset": TokenType.ASET,
+        "string": TokenType.STRING_ALLOC,
+        "getchar": TokenType.GETCHAR,
+        "setchar": TokenType.SETCHAR,
+        "print_char": TokenType.PRINT_CHAR,
         "+": TokenType.PLUS,
         "-": TokenType.MINUS,
         "*": TokenType.MULT,
@@ -83,7 +102,9 @@ class Lexer:
         ">": TokenType.LEFT,
         "<": TokenType.RIGHT,
         ">=": TokenType.LEFTEQ,
-        "<=": TokenType.RIGHTEQ
+        "<=": TokenType.RIGHTEQ,
+        "[": TokenType.LSBRACKET,
+        "]": TokenType.RSBRACKET
     }
 
     def __init__(self) -> None:
@@ -110,6 +131,7 @@ class Lexer:
             mask5 = self.source[self.position:self.position + 5]
             mask6 = self.source[self.position:self.position + 6]
             mask7 = self.source[self.position:self.position + 7]
+            mask10 = self.source[self.position:self.position + 10]
             mask12 = self.source[self.position:self.position + 12]
 
             if mask1 in [" ", "\t", "\n"]:
@@ -125,58 +147,68 @@ class Lexer:
                 self.tokens.append(Token(TokenType.NUMBER, int(value)))
                 self.position = end
 
-            elif mask2 in ["if", "==", "<=", ">=", "!="]:
-                self.position += 2
-                self.tokens.append(Token(self.KEYWORDS[mask2], mask2))
+            elif mask12 in ["print_string", "print_number"]:
+                self.position += 12
+                self.tokens.append(Token(self.KEYWORDS[mask12], mask12))
 
-            elif mask1 in ["-", "+", "*", "/", "(", ")", "<", ">", "%"]:
-                self.position += 1
-                self.tokens.append(Token(self.KEYWORDS[mask1], mask1))
+            elif mask10 in ["print_char"]:
+                self.position += 10
+                self.tokens.append(Token(self.KEYWORDS[mask10], mask10))
+
+            elif mask7 in ["funcall", "getchar", "setchar"]:
+                self.position += 7
+                self.tokens.append(Token(self.KEYWORDS[mask7], mask7))
+
+            elif mask6 in ["repeat", "defunc", "string"]:
+                self.position += 6
+                self.tokens.append(Token(self.KEYWORDS[mask6], mask6))
+
+            elif mask5 in ["while", "input", "array"]:
+                self.position += 5
+                self.tokens.append(Token(self.KEYWORDS[mask5], mask5))
+
+            elif mask4 in ["else", "aget", "aset"]:
+                self.position += 4
+                self.tokens.append(Token(self.KEYWORDS[mask4], mask4))
 
             elif mask3 in ["set"]:
                 self.position += 3
                 self.tokens.append(Token(self.KEYWORDS[mask3], mask3))
 
-            elif mask4 in ["else"]:
-                self.position += 4
-                self.tokens.append(Token(self.KEYWORDS[mask4], mask4))
+            elif mask2 in ["if", "==", "<=", ">=", "!="]:
+                self.position += 2
+                self.tokens.append(Token(self.KEYWORDS[mask2], mask2))
 
-            elif mask12 in ["print_string", "print_number"]:
-                self.position += 12
-                self.tokens.append(Token(self.KEYWORDS[mask12], mask12))
-
-            elif mask5 in ["while", "input"]:
-                self.position += 5
-                self.tokens.append(Token(self.KEYWORDS[mask5], mask5))
-
-            elif mask6 in ["repeat", "defunc"]:
-                self.position += 6
-                self.tokens.append(Token(self.KEYWORDS[mask6], mask6))
-
-            elif mask7 in ["funcall"]:
-                self.position += 7
-                self.tokens.append(Token(self.KEYWORDS[mask7], mask7))
+            elif mask1 in ["-", "+", "*", "/", "(", ")", "<", ">", "%", "[", "]"]:
+                self.position += 1
+                self.tokens.append(Token(self.KEYWORDS[mask1], mask1))
 
             elif mask1 == '"':
                 end = self.position + 1
+
                 while end < self.len_source and self.source[end] != '"':
                     end += 1
+
                 value = self.source[self.position + 1:end]
                 self.tokens.append(Token(TokenType.STRING, value))
                 self.position = end + 1
 
             elif mask1.isdigit():
                 end = self.position
+
                 while end < self.len_source and self.source[end].isdigit():
                     end += 1
+
                 value = self.source[self.position:end]
                 self.tokens.append(Token(TokenType.NUMBER, int(value)))
                 self.position = end
 
             elif mask1.isalpha() or mask1 == "_":
                 end = self.position
+
                 while end < self.len_source and (self.source[end].isalnum() or self.source[end] == "_"):
                     end += 1
+
                 value = self.source[self.position:end]
                 self.tokens.append(Token(TokenType.IDENTIFIER, value))
                 self.position = end
