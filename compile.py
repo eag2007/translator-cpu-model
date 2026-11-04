@@ -33,7 +33,7 @@ class Compile:
         self.ast = ast
         self.__select(self.ast)
         self.__translate(self.ast)
-        self.instructions += [("HALT", )]
+        self.instructions += [("HALT",)]
         self.save_asm()
 
     def save_asm(self):
@@ -42,7 +42,7 @@ class Compile:
         """
         with open("main.asm", "w") as f:
             for i in self.data:
-                print(f"{i[0]:<16} {' '.join(i[1:])}".rstrip(), file=f)
+                print(f"{i[0]:<24} {' '.join(i[1:])}".rstrip(), file=f)
 
             for i in self.instructions:
                 if i[0].endswith(":"):
@@ -134,7 +134,12 @@ class Compile:
             self.__translate_expr_repeat(expression)
 
         if isinstance(expression, DefuncExpr):
-            self.__translate_expr_defunc(expression)
+            if expression.name == "irq_input":
+                self.__translate_expr_irq_input(expression)
+            elif expression.name == "irq_output":
+                self.__translate_expr_irq_output(expression)
+            else:
+                self.__translate_expr_defunc(expression)
 
         if isinstance(expression, FuncCallExpr):
             self.__translate_expr_funcall(expression)
@@ -157,6 +162,9 @@ class Compile:
         if isinstance(expression, GetCharExpr):
             self.__translate_expr_get_char(expression)
 
+        if isinstance(expression, InputExpr):
+            self.__translate_expr_input(expression)
+
     def __new_label(self, prefix) -> str:
         """Создает новую уникальную метку
             :param prefix:      название метки
@@ -177,7 +185,7 @@ class Compile:
         if isinstance(expr, SetExpr):
             name = expr.target.name
 
-            if name not in self.stack_ident:
+            if name not in self.stack_ident and name not in self.identifiers:
                 self.__push()
                 self.stack_ident[name] = self.stack_depth + 4
 
@@ -235,7 +243,64 @@ class Compile:
         for expr in funcexpr.body:
             self.__see_local_variable(expr)
 
-    def __translate_expr_defunc(self, expression: DefuncExpr):
+    def __translate_expr_input(self, expression: InputExpr):
+        if expression.size is None:
+            self.__translate_expr_input_number()
+        else:
+            self.__translate_expr_input_string(expression)
+
+    def __translate_expr_input_number(self):
+        label_wait = self.__new_label("in_nbr_wait")
+
+        self.instructions += [
+            (label_wait + ":",),
+            ("LOAD", "system_in_ready"),
+            ("CMP", "#0"),
+            ("BEQ", label_wait),
+            ("LOAD", "system_in_buffer")
+        ]
+        self.__push()
+        self.instructions += [
+            ("LOAD", "#0"),
+            ("STORE", "system_in_ready")
+        ]
+        self.__pop()
+
+    def __translate_expr_input_string(self, expression: InputExpr):
+        size = expression.size.value
+        label = self.__new_label("input_str")
+        loop = self.__new_label("input_loop")
+
+        self.data += [(label + ":",), ]
+        self.data += [(".byte", "0")] * (size + 1)
+
+        self.instructions += [
+            ("LOAD", "?" + label),
+            ("STORE", "$tmp_address$"),
+            ("LOAD", f"#{size}"),
+            ("STORE", "$tmp$"),
+            (loop + ":",),
+            ("LOAD", "$tmp$"),
+            ("CMP", "#0"),
+            ("BEQ", loop + "_end")
+        ]
+
+        self.__translate_expr_input_number()
+
+        self.instructions += [
+            ("STORE.b", "@$tmp_address$"),
+            ("LOAD", "$tmp_address$"),
+            ("ADD", "#1"),
+            ("STORE", "$tmp_address$"),
+            ("LOAD", "$tmp$"),
+            ("SUB", "#1"),
+            ("STORE", "$tmp$"),
+            ("JUMP", loop),
+            (loop + "_end:",),
+            ("LOAD", "?" + label)
+        ]
+
+    def __translate_expr_defunc(self, expression: DefuncExpr, return_opcode="RET"):
         """Перевод из defunc expression в ассемблер код
             :param expression:      выражение функции
             :return None
@@ -275,7 +340,7 @@ class Compile:
             self.instructions += [("LOAD", "$tmp$")]
 
         self.instructions += [
-            ("RET",),
+            (return_opcode,),
             (label_end + ":",)
         ]
 
@@ -735,6 +800,12 @@ class Compile:
             ("LOAD", "$tmp$"),
             ("STORE.b", "@$tmp_address$")
         ]
+
+    def __translate_expr_irq_input(self, expression: DefuncExpr):
+        self.__translate_expr_defunc(expression, "IRET")
+
+    def __translate_expr_irq_output(self, expression: DefuncExpr):
+        self.__translate_expr_defunc(expression, "IRET")
 
     def __select(self, ast_tree):
         """Создает список из глобальных переменных вычисленных из Expression выражений
