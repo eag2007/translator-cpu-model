@@ -55,14 +55,14 @@ class Compile:
             :return None
         """
         self.instructions += [("PUSH",)]
-        self.stack_depth -= 4
+        self.stack_depth -= 1
 
     def __pop(self):
         """Снимает значение из верхушки стека и кладет его в ACC, меняет глубину стека
             :return None
         """
         self.instructions += [("POP",)]
-        self.stack_depth += 4
+        self.stack_depth += 1
 
     def __variable_address(self, name):
         """Дает ссылку на переменную (если переменная локальная то адрес в стеке, иначе метку на глобальную)
@@ -165,6 +165,15 @@ class Compile:
         if isinstance(expression, InputExpr):
             self.__translate_expr_input(expression)
 
+        if isinstance(expression, PrintCharExpr):
+            self.__translate_expr_print_char(expression)
+
+        if isinstance(expression, PrintNumberExpr):
+            self.__translate_expr_print_number(expression)
+
+        if isinstance(expression, PrintStringExpr):
+            self.__translate_expr_print_string(expression)
+
     def __new_label(self, prefix) -> str:
         """Создает новую уникальную метку
             :param prefix:      название метки
@@ -187,7 +196,7 @@ class Compile:
 
             if name not in self.stack_ident and name not in self.identifiers:
                 self.__push()
-                self.stack_ident[name] = self.stack_depth + 4
+                self.stack_ident[name] = self.stack_depth + 1
 
             self.__see_local_variable(expr.value)
         elif isinstance(expr, BinaryExpr):
@@ -249,6 +258,68 @@ class Compile:
         else:
             self.__translate_expr_input_string(expression)
 
+    def __move_from_acc_to_buffer(self, expression: PrintCharExpr | PrintNumberExpr):
+        wait = self.__new_label("wait")
+
+        self.instructions += [
+            (wait + ":",),
+            ("LOAD", "system_out_ready"),
+            ("CMP", "#0"),
+            ("BEQ", wait + "_end"),
+            ("JUMP", wait),
+            (wait + "_end:",)
+        ]
+        self.__translate_expr(expression.value)
+        self.instructions += [
+            ("STORE", "system_out_buffer"),
+            ("LOAD", "#1"),
+            ("STORE", "system_out_ready")
+        ]
+
+    def __translate_expr_print_char(self, expression: PrintCharExpr):
+        self.__move_from_acc_to_buffer(expression)
+
+    def __translate_expr_print_number(self, expression: PrintNumberExpr):
+        self.__move_from_acc_to_buffer(expression)
+
+    def __translate_expr_print_string(self, expression: PrintStringExpr):
+        ptr = self.__new_label("print_str_ptr")
+        loop = self.__new_label("print_str_loop")
+        check = self.__new_label("print_str_check")
+        end = self.__new_label("print_str_end")
+
+        self.data += [
+            (ptr + ":",),
+            (".word", "0")
+        ]
+
+        self.__translate_expr(expression.value)
+        self.instructions += [
+            ("STORE", ptr),
+            (loop + ":",),
+            # проверим сигнал готовности
+            ("LOAD", "system_out_ready"),
+            ("CMP", "#0"),
+            ("BEQ", check),
+            ("JUMP", loop),
+            # проверим на конец символа
+            (check + ":",),
+            ("LOAD", "@" + ptr),
+            ("CMP", "#0"),
+            ("BEQ", end),
+            # передаем в буфер символ
+            ("LOAD", "@" + ptr),
+            ("STORE", "system_out_buffer"),
+            ("LOAD", "#1"),
+            ("STORE", "system_out_ready"),
+
+            ("LOAD", ptr),
+            ("ADD", "#1"),
+            ("STORE", ptr),
+            ("JUMP", loop),
+            (end + ":",)
+        ]
+
     def __translate_expr_input_number(self):
         label_wait = self.__new_label("in_nbr_wait")
 
@@ -272,7 +343,7 @@ class Compile:
         loop = self.__new_label("input_loop")
 
         self.data += [(label + ":",), ]
-        self.data += [(".byte", "0")] * (size + 1)
+        self.data += [(".word", "0")] * (size + 1)
 
         self.instructions += [
             ("LOAD", "?" + label),
@@ -288,7 +359,7 @@ class Compile:
         self.__translate_expr_input_number()
 
         self.instructions += [
-            ("STORE.b", "@$tmp_address$"),
+            ("STORE", "@$tmp_address$"),
             ("LOAD", "$tmp_address$"),
             ("ADD", "#1"),
             ("STORE", "$tmp_address$"),
@@ -317,16 +388,23 @@ class Compile:
         count_params = len(expression.params)
 
         for index, param in enumerate(expression.params):
-            self.stack_ident[param.name] = (count_params - index + 1) * 4
+            self.stack_ident[param.name] = count_params - index + 1
 
         self.instructions += [
             ("JUMP", label_end),
             (label_function + ":",),
-            ("LOAD", "#0")
         ]
 
+        if return_opcode == "IRET":
+            self.instructions += [("LOAD", "$tmp$")]
+            self.__push()
+            self.instructions += [("LOAD", "$tmp_address$")]
+            self.__push()
+
+        self.instructions += [("LOAD", "#0")]
+
         self.__create_memory_for_local_variables(expression)
-        local_count = -self.stack_depth // 4
+        local_count = -self.stack_depth - (2 if return_opcode == "IRET" else 0)
 
         for expr in expression.body:
             self.__translate_expr(expr)
@@ -338,6 +416,12 @@ class Compile:
                 self.__pop()
 
             self.instructions += [("LOAD", "$tmp$")]
+
+        if return_opcode == "IRET":
+            self.__pop()
+            self.instructions += [("STORE", "$tmp_address$")]
+            self.__pop()
+            self.instructions += [("STORE", "$tmp$")]
 
         self.instructions += [
             (return_opcode,),
@@ -423,8 +507,8 @@ class Compile:
 
         self.data += [(label_string + ":",)]
         for symbol in expression.value:
-            self.data += [(".byte", str(ord(symbol)))]
-        self.data += [(".byte", str(00))]
+            self.data += [(".word", str(ord(symbol)))]
+        self.data += [(".word", str(00))]
         self.instructions += [("LOAD", "?" + label_string)]
 
     def __translate_expr_if(self, expression: IfExpr):
@@ -707,7 +791,6 @@ class Compile:
         self.__push()
         self.__translate_expr(index)
         self.instructions += [
-            ("MUL", "#4"),
             ("STORE", "$tmp$")
         ]
         self.__pop()
@@ -726,7 +809,6 @@ class Compile:
         self.__push()
         self.__translate_expr(index)
         self.instructions += [
-            ("MUL", "#4"),
             ("STORE", "$tmp$")
         ]
         self.__pop()
@@ -750,8 +832,8 @@ class Compile:
         self.data += [(label_string + ":",)]
 
         for i in range(size):
-            self.data += [(".byte", "0")]
-        self.data += [(".byte", "0")]
+            self.data += [(".word", "0")]
+        self.data += [(".word", "0")]
 
         self.instructions += [("LOAD", f"?{label_string}")]
 
@@ -769,7 +851,7 @@ class Compile:
         self.instructions += [
             ("ADD", "$tmp$"),
             ("STORE", "$tmp$"),
-            ("LOAD.b", "@$tmp$")
+            ("LOAD", "@$tmp$")
         ]
 
     def __translate_expr_set_char(self, expression: SetCharExpr):
@@ -798,7 +880,7 @@ class Compile:
         self.instructions += [
             ("STORE", "$tmp_address$"),
             ("LOAD", "$tmp$"),
-            ("STORE.b", "@$tmp_address$")
+            ("STORE", "@$tmp_address$")
         ]
 
     def __translate_expr_irq_input(self, expression: DefuncExpr):
@@ -819,7 +901,7 @@ class Compile:
         self.identifiers.add("$tmp_address$")
 
         for identifier in self.identifiers:
-            self.data.append((identifier, '.word', "?"))
+            self.data.append((identifier, '.word', "0"))
 
     def __select_identifiers(self, expression: Expr, is_global: bool):
         """Выбирает глобальные переменные из Expression выражений
