@@ -1,4 +1,4 @@
-from parser import *
+from compiler.parser import *
 
 
 class Compile:
@@ -36,11 +36,17 @@ class Compile:
         self.instructions += [("HALT",)]
         self.save_asm()
 
+    def get_data(self):
+        return self.data
+
+    def get_instructions(self):
+        return self.instructions
+
     def save_asm(self):
         """Сохраняет assembler код в файл
             :return None
         """
-        with open("main.asm", "w") as f:
+        with open("./output/asm/main.asm", "w") as f:
             for i in self.data:
                 print(f"{i[0]:<24} {' '.join(i[1:])}".rstrip(), file=f)
 
@@ -71,8 +77,8 @@ class Compile:
         """
         if name in self.stack_ident:
             offset = self.stack_ident[name] - self.stack_depth
-            return f"[{offset}]"
-        return name
+            return True, str(offset)
+        return False, name
 
     def __translate(self, ast_tree):
         """Первый обход по всем expression для выявления всех глобальных переменных и статических значений
@@ -264,7 +270,7 @@ class Compile:
         self.instructions += [
             (wait + ":",),
             ("LOAD", "system_out_ready"),
-            ("CMP", "#0"),
+            ("CMPI", "0"),
             ("BEQ", wait + "_end"),
             ("JUMP", wait),
             (wait + "_end:",)
@@ -272,7 +278,7 @@ class Compile:
         self.__translate_expr(expression.value)
         self.instructions += [
             ("STORE", "system_out_buffer"),
-            ("LOAD", "#1"),
+            ("LOADI", "1"),
             ("STORE", "system_out_ready")
         ]
 
@@ -299,22 +305,22 @@ class Compile:
             (loop + ":",),
             # проверим сигнал готовности
             ("LOAD", "system_out_ready"),
-            ("CMP", "#0"),
+            ("CMPI", "0"),
             ("BEQ", check),
             ("JUMP", loop),
             # проверим на конец символа
             (check + ":",),
-            ("LOAD", "@" + ptr),
-            ("CMP", "#0"),
+            ("LOAD_IND", ptr),
+            ("CMPI", "0"),
             ("BEQ", end),
             # передаем в буфер символ
-            ("LOAD", "@" + ptr),
+            ("LOAD_IND", ptr),
             ("STORE", "system_out_buffer"),
-            ("LOAD", "#1"),
+            ("LOADI", "1"),
             ("STORE", "system_out_ready"),
 
             ("LOAD", ptr),
-            ("ADD", "#1"),
+            ("ADDI", "1"),
             ("STORE", ptr),
             ("JUMP", loop),
             (end + ":",)
@@ -326,13 +332,13 @@ class Compile:
         self.instructions += [
             (label_wait + ":",),
             ("LOAD", "system_in_ready"),
-            ("CMP", "#0"),
+            ("CMPI", "0"),
             ("BEQ", label_wait),
             ("LOAD", "system_in_buffer")
         ]
         self.__push()
         self.instructions += [
-            ("LOAD", "#0"),
+            ("LOADI", "0"),
             ("STORE", "system_in_ready")
         ]
         self.__pop()
@@ -346,29 +352,29 @@ class Compile:
         self.data += [(".word", "0")] * (size + 1)
 
         self.instructions += [
-            ("LOAD", "?" + label),
+            ("LOAD_ADDR", label),
             ("STORE", "$tmp_address$"),
-            ("LOAD", f"#{size}"),
+            ("LOADI", f"{size}"),
             ("STORE", "$tmp$"),
             (loop + ":",),
             ("LOAD", "$tmp$"),
-            ("CMP", "#0"),
+            ("CMPI", "0"),
             ("BEQ", loop + "_end")
         ]
 
         self.__translate_expr_input_number()
 
         self.instructions += [
-            ("STORE", "@$tmp_address$"),
+            ("STORE_IND", "$tmp_address$"),
             ("LOAD", "$tmp_address$"),
-            ("ADD", "#1"),
+            ("ADDI", "1"),
             ("STORE", "$tmp_address$"),
             ("LOAD", "$tmp$"),
-            ("SUB", "#1"),
+            ("SUBI", "1"),
             ("STORE", "$tmp$"),
             ("JUMP", loop),
             (loop + "_end:",),
-            ("LOAD", "?" + label)
+            ("LOAD_ADDR", label)
         ]
 
     def __translate_expr_defunc(self, expression: DefuncExpr, return_opcode="RET"):
@@ -401,7 +407,7 @@ class Compile:
             self.instructions += [("LOAD", "$tmp_address$")]
             self.__push()
 
-        self.instructions += [("LOAD", "#0")]
+        self.instructions += [("LOADI", "0")]
 
         self.__create_memory_for_local_variables(expression)
         local_count = -self.stack_depth - (2 if return_opcode == "IRET" else 0)
@@ -461,7 +467,7 @@ class Compile:
         self.__translate_expr(expression.count)
         self.instructions += [
             (label_check + ":",),
-            ("CMP", "#0"),
+            ("CMPI", "0"),
             ("BEQ", label_end),
             ("BGE", label_loop),
             ("JUMP", label_end),
@@ -472,7 +478,7 @@ class Compile:
             self.__translate_expr(expr)
         self.__pop()
         self.instructions += [
-            ("SUB", "#1"),
+            ("SUBI", "1"),
             ("JUMP", label_check),
             (label_end + ":",)
         ]
@@ -488,7 +494,7 @@ class Compile:
         self.instructions += [(label_loop + ":",)]
         self.__translate_expr(expression.condition)
         self.instructions += [
-            ("CMP", "#0"),
+            ("CMPI", "0"),
             ("BEQ", label_end)
         ]
         for expr in expression.body:
@@ -509,7 +515,7 @@ class Compile:
         for symbol in expression.value:
             self.data += [(".word", str(ord(symbol)))]
         self.data += [(".word", str(00))]
-        self.instructions += [("LOAD", "?" + label_string)]
+        self.instructions += [("LOAD_ADDR", label_string)]
 
     def __translate_expr_if(self, expression: IfExpr):
         """Перевод if expression в ассемблер код
@@ -521,7 +527,7 @@ class Compile:
 
         self.__translate_expr(expression.condition)
         self.instructions += [
-            ("CMP", "#0"),
+            ("CMPI", "0"),
             ("BEQ", label_false)
         ]
         for expr in expression.body:
@@ -555,10 +561,10 @@ class Compile:
             ("BEQ", label_false),
             ("BGE", label_true),
             (label_false + ":",),
-            ("LOAD", "#0"),
+            ("LOADI", "0"),
             ("JUMP", label_end),
             (label_true + ":",),
-            ("LOAD", "#1"),
+            ("LOADI", "1"),
             (label_end + ":",)
         ]
 
@@ -578,10 +584,10 @@ class Compile:
         self.instructions += [
             ("CMP", "$tmp$"),
             ("BGE", label_false),
-            ("LOAD", "#1"),
+            ("LOADI", "1"),
             ("JUMP", label_end),
             (label_false + ":",),
-            ("LOAD", "#0"),
+            ("LOADI", "0"),
             (label_end + ":",)
         ]
 
@@ -601,10 +607,10 @@ class Compile:
         self.instructions += [
             ("CMP", "$tmp$"),
             ("BGE", label_true),
-            ("LOAD", "#0"),
+            ("LOADI", "0"),
             ("JUMP", label_end),
             (label_true + ":",),
-            ("LOAD", "#1"),
+            ("LOADI", "1"),
             (label_end + ":",)
         ]
 
@@ -628,10 +634,10 @@ class Compile:
             ("BEQ", label_true),
             ("BGE", label_false),
             (label_true + ":",),
-            ("LOAD", "#1"),
+            ("LOADI", "1"),
             ("JUMP", label_end),
             (label_false + ":",),
-            ("LOAD", "#0"),
+            ("LOADI", "0"),
             (label_end + ":",)
         ]
 
@@ -655,10 +661,10 @@ class Compile:
             ("BEQ", label_true),
             ("JUMP", label_false),
             (label_true + ":",),
-            ("LOAD", "#1"),
+            ("LOADI", "1"),
             ("JUMP", label_end),
             (label_false + ":",),
-            ("LOAD", "#0"),
+            ("LOADI", "0"),
             ("JUMP", label_end),
             (label_end + ":",)
         ]
@@ -682,10 +688,10 @@ class Compile:
             ("BEQ", label_false),
             ("JUMP", label_true),
             (label_false + ":",),
-            ("LOAD", "#0"),
+            ("LOADI", "0"),
             ("JUMP", label_end),
             (label_true + ":",),
-            ("LOAD", "#1"),
+            ("LOADI", "1"),
             (label_end + ":",)
         ]
 
@@ -694,8 +700,9 @@ class Compile:
             :param expression:      выражение уникального идентификатора
             :return None
         """
-        address = self.__variable_address(expression.name)
-        self.instructions += [("LOAD", address)]
+        is_local, address = self.__variable_address(expression.name)
+        opcode = "LOAD_SP" if is_local else "LOAD"
+        self.instructions += [(opcode, address)]
 
     def __translate_expr_set(self, expression: SetExpr):
         """Перевод set expression в ассемблер код
@@ -703,15 +710,16 @@ class Compile:
             :return None
         """
         self.__translate_expr(expression.value)
-        address = self.__variable_address(expression.target.name)
-        self.instructions += [("STORE", address)]
+        is_local, address = self.__variable_address(expression.target.name)
+        opcode = "STORE_SP" if is_local else "STORE"
+        self.instructions += [(opcode, address)]
 
     def __translate_expr_number(self, expression: NumberExpr):
         """Перевод number expression в ассемблер код
             :param expression:      выражение числа
             :return None
         """
-        self.instructions += [("LOAD", f"#{expression.value}")]
+        self.instructions += [("LOADI", f"{expression.value}")]
 
     def __translate_expr_sum(self, expression: BinaryExpr):
         """Перевод binary operation + expression в ассемблер код
@@ -781,7 +789,7 @@ class Compile:
         for _ in range(size):
             self.data += [(".word", "0")]
 
-        self.instructions += [("LOAD", "?" + label_array)]
+        self.instructions += [("LOAD_ADDR", label_array)]
 
     def __translate_expr_array_get(self, expression: ArrayGetExpr):
         address = expression.address
@@ -797,7 +805,7 @@ class Compile:
         self.instructions += [
             ("ADD", "$tmp$"),
             ("STORE", "$tmp$"),
-            ("LOAD", "@$tmp$")
+            ("LOAD_IND", "$tmp$")
         ]
 
     def __translate_expr_array_set(self, expression: ArraySetExpr):
@@ -823,7 +831,7 @@ class Compile:
         self.instructions += [
             ("STORE", "$tmp_address$"),
             ("LOAD", "$tmp$"),
-            ("STORE", "@$tmp_address$")
+            ("STORE_IND", "$tmp_address$")
         ]
 
     def __translate_expr_string_alloc(self, expression: StringAllocExpr):
@@ -835,7 +843,7 @@ class Compile:
             self.data += [(".word", "0")]
         self.data += [(".word", "0")]
 
-        self.instructions += [("LOAD", f"?{label_string}")]
+        self.instructions += [("LOAD_ADDR", label_string)]
 
     def __translate_expr_get_char(self, expression: GetCharExpr):
         address = expression.address
@@ -851,7 +859,7 @@ class Compile:
         self.instructions += [
             ("ADD", "$tmp$"),
             ("STORE", "$tmp$"),
-            ("LOAD", "@$tmp$")
+            ("LOAD_IND", "$tmp$")
         ]
 
     def __translate_expr_set_char(self, expression: SetCharExpr):
@@ -880,7 +888,7 @@ class Compile:
         self.instructions += [
             ("STORE", "$tmp_address$"),
             ("LOAD", "$tmp$"),
-            ("STORE", "@$tmp_address$")
+            ("STORE_IND", "$tmp_address$")
         ]
 
     def __translate_expr_irq_input(self, expression: DefuncExpr):

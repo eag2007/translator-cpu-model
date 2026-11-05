@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from lexer import Token, TokenType
+from compiler.lexer import Token, TokenType
 
 
 class Expr:
