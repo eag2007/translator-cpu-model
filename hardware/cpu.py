@@ -6,3 +6,4 @@ class CPU:
         self.acc = 0
         self.ip = 0
         self.sp = MEMORY_SIZE
+        self.pc = 0

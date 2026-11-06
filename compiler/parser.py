@@ -8,6 +8,16 @@ class Expr:
 
 
 @dataclass
+class DiExpr(Expr):
+    pass
+
+
+@dataclass
+class EiExpr(Expr):
+    pass
+
+
+@dataclass
 class StringAllocExpr(Expr):
     size: Expr
 
@@ -284,8 +294,22 @@ class Parser:
             elif token.type == TokenType.PRINT_CHAR:
                 return self.__parse_print_char(token)
 
+            elif token.type == TokenType.EI:
+                self.__parse_no_args()
+                return EiExpr()
+
+            elif token.type == TokenType.DI:
+                self.__parse_no_args()
+                return DiExpr()
+
             raise SyntaxError(f"Неизвестное выражение: {token}")
         raise SyntaxError(f"Неизвестное выражение: {token}")
+
+    def __parse_no_args(self) -> None:
+        token = self.__get_token()
+
+        if token.type != TokenType.RBRACKET:
+            raise SyntaxError("_di и _ei не принимают аргументов")
 
     def __parse_bin(self, operation) -> BinaryExpr:
         """Разбирает два операнда бинарной операции и проверяет закрывающую скобку

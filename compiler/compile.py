@@ -180,6 +180,12 @@ class Compile:
         if isinstance(expression, PrintStringExpr):
             self.__translate_expr_print_string(expression)
 
+        if isinstance(expression, DiExpr):
+            self.instructions += [("DI",)]
+
+        if isinstance(expression, EiExpr):
+            self.instructions += [("EI",)]
+
     def __new_label(self, prefix) -> str:
         """Создает новую уникальную метку
             :param prefix:      название метки
@@ -267,21 +273,27 @@ class Compile:
     def __move_from_acc_to_buffer(self, expression: PrintCharExpr | PrintNumberExpr):
         wait = self.__new_label("wait")
 
+        self.__translate_expr(expression.value)
+        self.__push()
+
         self.instructions += [
             (wait + ":",),
             ("LOAD", "system_out_ready"),
             ("CMPI", "0"),
             ("BEQ", wait + "_end"),
             ("JUMP", wait),
-            (wait + "_end:",)
+            (wait + "_end:",),
+            ("DI",),
         ]
-        self.__translate_expr(expression.value)
+
+        self.__pop()
+
         self.instructions += [
             ("STORE", "system_out_buffer"),
             ("LOADI", "1"),
-            ("STORE", "system_out_ready")
+            ("STORE", "system_out_ready"),
+            ("EI",),
         ]
-
     def __translate_expr_print_char(self, expression: PrintCharExpr):
         self.__move_from_acc_to_buffer(expression)
 
@@ -314,10 +326,12 @@ class Compile:
             ("CMPI", "0"),
             ("BEQ", end),
             # передаем в буфер символ
+            ("DI",),
             ("LOAD_IND", ptr),
             ("STORE", "system_out_buffer"),
             ("LOADI", "1"),
             ("STORE", "system_out_ready"),
+            ("EI",),
 
             ("LOAD", ptr),
             ("ADDI", "1"),
@@ -334,6 +348,7 @@ class Compile:
             ("LOAD", "system_in_ready"),
             ("CMPI", "0"),
             ("BEQ", label_wait),
+            ("DI",),
             ("LOAD", "system_in_buffer")
         ]
         self.__push()
@@ -342,6 +357,7 @@ class Compile:
             ("STORE", "system_in_ready")
         ]
         self.__pop()
+        self.instructions += [("EI",)]
 
     def __translate_expr_input_string(self, expression: InputExpr):
         size = expression.size.value

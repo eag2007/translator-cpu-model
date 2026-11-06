@@ -1,14 +1,14 @@
 i                        .word 0
-number                   .word 0
-j                        .word 0
-fmt                      .word 0
-$tmp$                    .word 0
 left                     .word 0
+$tmp$                    .word 0
+fmt                      .word 0
 c                        .word 0
 width                    .word 0
 $tmp_address$            .word 0
-spaces                   .word 0
 length                   .word 0
+j                        .word 0
+number                   .word 0
+spaces                   .word 0
 input_str_24:
 .word                    0
 .word                    0
@@ -197,11 +197,13 @@ in_nbr_wait_26:
     LOAD     system_in_ready
     CMPI     0
     BEQ      in_nbr_wait_26
+    DI
     LOAD     system_in_buffer
     PUSH
     LOADI    0
     STORE    system_in_ready
     POP
+    EI
     STORE_IND $tmp_address$
     LOAD     $tmp_address$
     ADDI     1
@@ -403,11 +405,13 @@ in_nbr_wait_52:
     LOAD     system_in_ready
     CMPI     0
     BEQ      in_nbr_wait_52
+    DI
     LOAD     system_in_buffer
     PUSH
     LOADI    0
     STORE    system_in_ready
     POP
+    EI
     STORE    number
     LOAD     number
     PUSH
@@ -448,16 +452,20 @@ repeat_check_58:
     JUMP     end_60
 repeat_loop_59:
     PUSH
+    LOADI    32
+    PUSH
 wait_61:
     LOAD     system_out_ready
     CMPI     0
     BEQ      wait_61_end
     JUMP     wait_61
 wait_61_end:
-    LOADI    32
+    DI
+    POP
     STORE    system_out_buffer
     LOADI    1
     STORE    system_out_ready
+    EI
     POP
     SUBI     1
     JUMP     repeat_check_58
@@ -465,16 +473,20 @@ end_60:
     JUMP     end_54
 if_false_53:
 end_54:
+    LOAD     number
+    PUSH
 wait_62:
     LOAD     system_out_ready
     CMPI     0
     BEQ      wait_62_end
     JUMP     wait_62
 wait_62_end:
-    LOAD     number
+    DI
+    POP
     STORE    system_out_buffer
     LOADI    1
     STORE    system_out_ready
+    EI
     LOAD     left
     PUSH
     LOADI    1
@@ -500,16 +512,20 @@ repeat_check_68:
     JUMP     end_70
 repeat_loop_69:
     PUSH
+    LOADI    32
+    PUSH
 wait_71:
     LOAD     system_out_ready
     CMPI     0
     BEQ      wait_71_end
     JUMP     wait_71
 wait_71_end:
-    LOADI    32
+    DI
+    POP
     STORE    system_out_buffer
     LOADI    1
     STORE    system_out_ready
+    EI
     POP
     SUBI     1
     JUMP     repeat_check_68
@@ -526,16 +542,20 @@ end_64:
     STORE    i
     JUMP     end_48
 if_false_47:
+    LOAD     c
+    PUSH
 wait_72:
     LOAD     system_out_ready
     CMPI     0
     BEQ      wait_72_end
     JUMP     wait_72
 wait_72_end:
-    LOAD     c
+    DI
+    POP
     STORE    system_out_buffer
     LOADI    1
     STORE    system_out_ready
+    EI
     LOAD     i
     PUSH
     LOADI    1
@@ -546,16 +566,20 @@ wait_72_end:
 end_48:
     JUMP     end_33
 if_false_32:
+    LOAD     c
+    PUSH
 wait_73:
     LOAD     system_out_ready
     CMPI     0
     BEQ      wait_73_end
     JUMP     wait_73
 wait_73_end:
-    LOAD     c
+    DI
+    POP
     STORE    system_out_buffer
     LOADI    1
     STORE    system_out_ready
+    EI
     LOAD     i
     PUSH
     LOADI    1

@@ -48,6 +48,9 @@ class TokenType(Enum):
     LSBRACKET = auto()
     RSBRACKET = auto()
 
+    DI = auto()
+    EI = auto()
+
 
 @dataclass
 class Token:
@@ -104,7 +107,9 @@ class Lexer:
         ">=": TokenType.LEFTEQ,
         "<=": TokenType.RIGHTEQ,
         "[": TokenType.LSBRACKET,
-        "]": TokenType.RSBRACKET
+        "]": TokenType.RSBRACKET,
+        "_di": TokenType.DI,
+        "_ei": TokenType.EI,
     }
 
     def __init__(self) -> None:
@@ -171,7 +176,7 @@ class Lexer:
                 self.position += 4
                 self.tokens.append(Token(self.KEYWORDS[mask4], mask4))
 
-            elif mask3 in ["set"]:
+            elif mask3 in ["set", "_di", "_ei"]:
                 self.position += 3
                 self.tokens.append(Token(self.KEYWORDS[mask3], mask3))
 
