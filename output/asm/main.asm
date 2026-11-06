@@ -1,19 +1,19 @@
+left                     .word 0
+system_out_ready         .word 0
+$tmp_address$            .word 0
+length                   .word 0
+width                    .word 0
+j                        .word 0
+$tmp$                    .word 0
+system_out_buffer        .word 0
+number                   .word 0
+spaces                   .word 0
 system_in_buffer         .word 0
 system_in_ready          .word 0
-length                   .word 0
-$tmp$                    .word 0
 i                        .word 0
-$tmp_address$            .word 0
-j                        .word 0
-system_out_buffer        .word 0
-left                     .word 0
 c                        .word 0
 fmt                      .word 0
-width                    .word 0
-number                   .word 0
-system_out_ready         .word 0
-spaces                   .word 0
-input_str_28:
+input_str_26:
 .word                    0
 .word                    0
 .word                    0
@@ -112,71 +112,7 @@ $func_irq_output:
     STORE    $tmp$
     IRET
 end_1:
-    DI
-    LOADI    0
-    STORE    system_in_buffer
-    LOADI    0
-    STORE    system_in_ready
-    LOADI    0
-    STORE    system_out_buffer
-    LOADI    0
-    STORE    system_out_ready
-    EI
     JUMP     end_2
-$func_irq_input:
-    LOAD     $tmp$
-    PUSH
-    LOAD     $tmp_address$
-    PUSH
-    LOADI    0
-    DI
-    LOADI    0
-    PUSH
-    LOADI    0
-    STORE    $tmp$
-    POP
-    ADD      $tmp$
-    STORE    $tmp$
-    LOAD_IND $tmp$
-    STORE    system_in_buffer
-    LOADI    1
-    STORE    system_in_ready
-    POP
-    STORE    $tmp_address$
-    POP
-    STORE    $tmp$
-    IRET
-end_2:
-    JUMP     end_3
-$func_irq_output:
-    LOAD     $tmp$
-    PUSH
-    LOAD     $tmp_address$
-    PUSH
-    LOADI    0
-    DI
-    LOADI    1
-    PUSH
-    LOADI    0
-    STORE    $tmp$
-    POP
-    ADD      $tmp$
-    PUSH
-    LOAD     system_out_buffer
-    STORE    $tmp$
-    POP
-    STORE    $tmp_address$
-    LOAD     $tmp$
-    STORE_IND $tmp_address$
-    LOADI    0
-    STORE    system_out_ready
-    POP
-    STORE    $tmp_address$
-    POP
-    STORE    $tmp$
-    IRET
-end_3:
-    JUMP     end_4
 $func_is_digit:
     LOADI    0
     PUSH
@@ -188,45 +124,45 @@ $func_is_digit:
     STORE    $tmp$
     POP
     CMP      $tmp$
-    BGE      lefteq_true_7
+    BGE      lefteq_true_5
     LOADI    0
-    JUMP     end_8
-lefteq_true_7:
+    JUMP     end_6
+lefteq_true_5:
     LOADI    1
-end_8:
+end_6:
     CMPI     0
-    BEQ      if_false_5
+    BEQ      if_false_3
     LOAD_SP  3
     PUSH
     LOADI    57
     STORE    $tmp$
     POP
     CMP      $tmp$
-    BEQ      lefteq_true_11
-    BGE      lefteq_false_12
-lefteq_true_11:
+    BEQ      lefteq_true_9
+    BGE      lefteq_false_10
+lefteq_true_9:
     LOADI    1
-    JUMP     end_13
-lefteq_false_12:
+    JUMP     end_11
+lefteq_false_10:
     LOADI    0
-end_13:
+end_11:
     CMPI     0
-    BEQ      if_false_9
+    BEQ      if_false_7
     LOADI    1
     STORE_SP 1
-    JUMP     end_10
-if_false_9:
-end_10:
-    JUMP     end_6
-if_false_5:
-end_6:
+    JUMP     end_8
+if_false_7:
+end_8:
+    JUMP     end_4
+if_false_3:
+end_4:
     LOAD_SP  1
     STORE    $tmp$
     POP
     LOAD     $tmp$
     RET
-end_4:
-    JUMP     end_14
+end_2:
+    JUMP     end_12
 $func_number_length:
     LOADI    0
     LOADI    1
@@ -237,34 +173,34 @@ $func_number_length:
     STORE    $tmp$
     POP
     CMP      $tmp$
-    BGE      right_false_17
+    BGE      right_false_15
     LOADI    1
-    JUMP     end_18
-right_false_17:
+    JUMP     end_16
+right_false_15:
     LOADI    0
-end_18:
+end_16:
     CMPI     0
-    BEQ      if_false_15
+    BEQ      if_false_13
     LOADI    2
     STORE    length
-    JUMP     end_16
-if_false_15:
-end_16:
-loop_19:
+    JUMP     end_14
+if_false_13:
+end_14:
+loop_17:
     LOAD_SP  2
     PUSH
     LOADI    10
     STORE    $tmp$
     POP
     CMP      $tmp$
-    BGE      lefteq_true_21
+    BGE      lefteq_true_19
     LOADI    0
-    JUMP     end_22
-lefteq_true_21:
+    JUMP     end_20
+lefteq_true_19:
     LOADI    1
-end_22:
+end_20:
     CMPI     0
-    BEQ      end_20
+    BEQ      end_18
     LOAD_SP  2
     PUSH
     LOADI    10
@@ -279,25 +215,25 @@ end_22:
     POP
     ADD      $tmp$
     STORE    length
-    JUMP     loop_19
-end_20:
-loop_23:
+    JUMP     loop_17
+end_18:
+loop_21:
     LOAD_SP  2
     PUSH
     LOADI    -10
     STORE    $tmp$
     POP
     CMP      $tmp$
-    BEQ      lefteq_true_25
-    BGE      lefteq_false_26
-lefteq_true_25:
+    BEQ      lefteq_true_23
+    BGE      lefteq_false_24
+lefteq_true_23:
     LOADI    1
-    JUMP     end_27
-lefteq_false_26:
+    JUMP     end_25
+lefteq_false_24:
     LOADI    0
-end_27:
+end_25:
     CMPI     0
-    BEQ      end_24
+    BEQ      end_22
     LOAD_SP  2
     PUSH
     LOADI    10
@@ -312,23 +248,23 @@ end_27:
     POP
     ADD      $tmp$
     STORE    length
-    JUMP     loop_23
-end_24:
+    JUMP     loop_21
+end_22:
     LOAD     length
     RET
-end_14:
-    LOAD_ADDR input_str_28
+end_12:
+    LOAD_ADDR input_str_26
     STORE    $tmp_address$
     LOADI    32
     STORE    $tmp$
-input_loop_29:
+input_loop_27:
     LOAD     $tmp$
     CMPI     0
-    BEQ      input_loop_29_end
-in_nbr_wait_30:
+    BEQ      input_loop_27_end
+in_nbr_wait_28:
     LOAD     system_in_ready
     CMPI     0
-    BEQ      in_nbr_wait_30
+    BEQ      in_nbr_wait_28
     DI
     LOAD     system_in_buffer
     PUSH
@@ -343,13 +279,13 @@ in_nbr_wait_30:
     LOAD     $tmp$
     SUBI     1
     STORE    $tmp$
-    JUMP     input_loop_29
-input_loop_29_end:
-    LOAD_ADDR input_str_28
+    JUMP     input_loop_27
+input_loop_27_end:
+    LOAD_ADDR input_str_26
     STORE    fmt
     LOADI    0
     STORE    i
-loop_31:
+loop_29:
     LOAD     fmt
     PUSH
     LOAD     i
@@ -363,16 +299,16 @@ loop_31:
     STORE    $tmp$
     POP
     CMP      $tmp$
-    BEQ      not_equal_false_34
-    JUMP     not_equal_true_33
-not_equal_false_34:
+    BEQ      not_equal_false_32
+    JUMP     not_equal_true_31
+not_equal_false_32:
     LOADI    0
-    JUMP     end_35
-not_equal_true_33:
+    JUMP     end_33
+not_equal_true_31:
     LOADI    1
-end_35:
+end_33:
     CMPI     0
-    BEQ      end_32
+    BEQ      end_30
     LOAD     fmt
     PUSH
     LOAD     i
@@ -388,17 +324,17 @@ end_35:
     STORE    $tmp$
     POP
     CMP      $tmp$
-    BEQ      equal_true_38
-    JUMP     equal_false_39
-equal_true_38:
+    BEQ      equal_true_36
+    JUMP     equal_false_37
+equal_true_36:
     LOADI    1
-    JUMP     end_40
-equal_false_39:
+    JUMP     end_38
+equal_false_37:
     LOADI    0
-    JUMP     end_40
-end_40:
+    JUMP     end_38
+end_38:
     CMPI     0
-    BEQ      if_false_36
+    BEQ      if_false_34
     LOAD     i
     PUSH
     LOADI    1
@@ -423,17 +359,17 @@ end_40:
     STORE    $tmp$
     POP
     CMP      $tmp$
-    BEQ      equal_true_43
-    JUMP     equal_false_44
-equal_true_43:
+    BEQ      equal_true_41
+    JUMP     equal_false_42
+equal_true_41:
     LOADI    1
-    JUMP     end_45
-equal_false_44:
+    JUMP     end_43
+equal_false_42:
     LOADI    0
-    JUMP     end_45
-end_45:
+    JUMP     end_43
+end_43:
     CMPI     0
-    BEQ      if_false_41
+    BEQ      if_false_39
     LOADI    1
     STORE    left
     LOAD     j
@@ -443,10 +379,10 @@ end_45:
     POP
     ADD      $tmp$
     STORE    j
-    JUMP     end_42
-if_false_41:
-end_42:
-loop_46:
+    JUMP     end_40
+if_false_39:
+end_40:
+loop_44:
     LOAD     fmt
     PUSH
     LOAD     j
@@ -465,17 +401,17 @@ loop_46:
     STORE    $tmp$
     POP
     CMP      $tmp$
-    BEQ      equal_true_48
-    JUMP     equal_false_49
-equal_true_48:
+    BEQ      equal_true_46
+    JUMP     equal_false_47
+equal_true_46:
     LOADI    1
-    JUMP     end_50
-equal_false_49:
+    JUMP     end_48
+equal_false_47:
     LOADI    0
-    JUMP     end_50
-end_50:
+    JUMP     end_48
+end_48:
     CMPI     0
-    BEQ      end_47
+    BEQ      end_45
     LOAD     width
     PUSH
     LOADI    10
@@ -507,8 +443,8 @@ end_50:
     POP
     ADD      $tmp$
     STORE    j
-    JUMP     loop_46
-end_47:
+    JUMP     loop_44
+end_45:
     LOAD     fmt
     PUSH
     LOAD     j
@@ -522,21 +458,21 @@ end_47:
     STORE    $tmp$
     POP
     CMP      $tmp$
-    BEQ      equal_true_53
-    JUMP     equal_false_54
-equal_true_53:
+    BEQ      equal_true_51
+    JUMP     equal_false_52
+equal_true_51:
     LOADI    1
-    JUMP     end_55
-equal_false_54:
+    JUMP     end_53
+equal_false_52:
     LOADI    0
-    JUMP     end_55
-end_55:
+    JUMP     end_53
+end_53:
     CMPI     0
-    BEQ      if_false_51
-in_nbr_wait_56:
+    BEQ      if_false_49
+in_nbr_wait_54:
     LOAD     system_in_ready
     CMPI     0
-    BEQ      in_nbr_wait_56
+    BEQ      in_nbr_wait_54
     DI
     LOAD     system_in_buffer
     PUSH
@@ -565,33 +501,33 @@ in_nbr_wait_56:
     STORE    $tmp$
     POP
     CMP      $tmp$
-    BEQ      equal_true_59
-    JUMP     equal_false_60
-equal_true_59:
+    BEQ      equal_true_57
+    JUMP     equal_false_58
+equal_true_57:
     LOADI    1
-    JUMP     end_61
-equal_false_60:
+    JUMP     end_59
+equal_false_58:
     LOADI    0
-    JUMP     end_61
-end_61:
+    JUMP     end_59
+end_59:
     CMPI     0
-    BEQ      if_false_57
+    BEQ      if_false_55
     LOAD     spaces
-repeat_check_62:
+repeat_check_60:
     CMPI     0
-    BEQ      end_64
-    BGE      repeat_loop_63
-    JUMP     end_64
-repeat_loop_63:
+    BEQ      end_62
+    BGE      repeat_loop_61
+    JUMP     end_62
+repeat_loop_61:
     PUSH
     LOADI    32
     PUSH
-wait_65:
+wait_63:
     LOAD     system_out_ready
     CMPI     0
-    BEQ      wait_65_end
-    JUMP     wait_65
-wait_65_end:
+    BEQ      wait_63_end
+    JUMP     wait_63
+wait_63_end:
     DI
     POP
     STORE    system_out_buffer
@@ -600,19 +536,19 @@ wait_65_end:
     EI
     POP
     SUBI     1
-    JUMP     repeat_check_62
-end_64:
-    JUMP     end_58
-if_false_57:
-end_58:
+    JUMP     repeat_check_60
+end_62:
+    JUMP     end_56
+if_false_55:
+end_56:
     LOAD     number
     PUSH
-wait_66:
+wait_64:
     LOAD     system_out_ready
     CMPI     0
-    BEQ      wait_66_end
-    JUMP     wait_66
-wait_66_end:
+    BEQ      wait_64_end
+    JUMP     wait_64
+wait_64_end:
     DI
     POP
     STORE    system_out_buffer
@@ -625,26 +561,80 @@ wait_66_end:
     STORE    $tmp$
     POP
     CMP      $tmp$
-    BEQ      equal_true_69
-    JUMP     equal_false_70
-equal_true_69:
+    BEQ      equal_true_67
+    JUMP     equal_false_68
+equal_true_67:
     LOADI    1
-    JUMP     end_71
-equal_false_70:
+    JUMP     end_69
+equal_false_68:
     LOADI    0
-    JUMP     end_71
-end_71:
+    JUMP     end_69
+end_69:
     CMPI     0
-    BEQ      if_false_67
+    BEQ      if_false_65
     LOAD     spaces
-repeat_check_72:
+repeat_check_70:
     CMPI     0
-    BEQ      end_74
-    BGE      repeat_loop_73
-    JUMP     end_74
-repeat_loop_73:
+    BEQ      end_72
+    BGE      repeat_loop_71
+    JUMP     end_72
+repeat_loop_71:
     PUSH
     LOADI    32
+    PUSH
+wait_73:
+    LOAD     system_out_ready
+    CMPI     0
+    BEQ      wait_73_end
+    JUMP     wait_73
+wait_73_end:
+    DI
+    POP
+    STORE    system_out_buffer
+    LOADI    1
+    STORE    system_out_ready
+    EI
+    POP
+    SUBI     1
+    JUMP     repeat_check_70
+end_72:
+    JUMP     end_66
+if_false_65:
+end_66:
+    LOAD     j
+    PUSH
+    LOADI    1
+    STORE    $tmp$
+    POP
+    ADD      $tmp$
+    STORE    i
+    JUMP     end_50
+if_false_49:
+    LOAD     c
+    PUSH
+wait_74:
+    LOAD     system_out_ready
+    CMPI     0
+    BEQ      wait_74_end
+    JUMP     wait_74
+wait_74_end:
+    DI
+    POP
+    STORE    system_out_buffer
+    LOADI    1
+    STORE    system_out_ready
+    EI
+    LOAD     i
+    PUSH
+    LOADI    1
+    STORE    $tmp$
+    POP
+    ADD      $tmp$
+    STORE    i
+end_50:
+    JUMP     end_35
+if_false_34:
+    LOAD     c
     PUSH
 wait_75:
     LOAD     system_out_ready
@@ -658,36 +648,6 @@ wait_75_end:
     LOADI    1
     STORE    system_out_ready
     EI
-    POP
-    SUBI     1
-    JUMP     repeat_check_72
-end_74:
-    JUMP     end_68
-if_false_67:
-end_68:
-    LOAD     j
-    PUSH
-    LOADI    1
-    STORE    $tmp$
-    POP
-    ADD      $tmp$
-    STORE    i
-    JUMP     end_52
-if_false_51:
-    LOAD     c
-    PUSH
-wait_76:
-    LOAD     system_out_ready
-    CMPI     0
-    BEQ      wait_76_end
-    JUMP     wait_76
-wait_76_end:
-    DI
-    POP
-    STORE    system_out_buffer
-    LOADI    1
-    STORE    system_out_ready
-    EI
     LOAD     i
     PUSH
     LOADI    1
@@ -695,31 +655,7 @@ wait_76_end:
     POP
     ADD      $tmp$
     STORE    i
-end_52:
-    JUMP     end_37
-if_false_36:
-    LOAD     c
-    PUSH
-wait_77:
-    LOAD     system_out_ready
-    CMPI     0
-    BEQ      wait_77_end
-    JUMP     wait_77
-wait_77_end:
-    DI
-    POP
-    STORE    system_out_buffer
-    LOADI    1
-    STORE    system_out_ready
-    EI
-    LOAD     i
-    PUSH
-    LOADI    1
-    STORE    $tmp$
-    POP
-    ADD      $tmp$
-    STORE    i
-end_37:
-    JUMP     loop_31
-end_32:
+end_35:
+    JUMP     loop_29
+end_30:
     HALT
