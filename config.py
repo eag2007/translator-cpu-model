@@ -37,3 +37,19 @@ OPCODE_TABLE = {
     "ei":           [0b00011110, 0x1E],
     "di":           [0b00011111, 0x1F]
 }
+
+IMM_BINARY_OPS = {
+    OPCODE_TABLE["addi"][0]: "add",
+    OPCODE_TABLE["subi"][0]: "sub",
+    OPCODE_TABLE["muli"][0]: "mul",
+    OPCODE_TABLE["divi"][0]: "div",
+    OPCODE_TABLE["modi"][0]: "mod",
+}
+
+MEM_BINARY_OPS = {
+    OPCODE_TABLE["add"][0]: "add",
+    OPCODE_TABLE["sub"][0]: "sub",
+    OPCODE_TABLE["mul"][0]: "mul",
+    OPCODE_TABLE["div"][0]: "div",
+    OPCODE_TABLE["mod"][0]: "mod",
+}

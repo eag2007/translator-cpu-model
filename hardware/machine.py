@@ -4,13 +4,15 @@ from pathlib import Path
 from config import WORD_SIZE
 from hardware.cpu import CPU
 from hardware.memory import InstructionMemory, DataMemory
+from hardware.pipeline import Pipeline
 
 
 class Machine:
     def __init__(self):
         self.instruction_memory = InstructionMemory()
         self.data_memory = DataMemory()
-        self.cpu = CPU()
+        self.pipeline = Pipeline()
+        self.cpu = CPU(self.instruction_memory, self.data_memory, self.pipeline)
 
         self.instruction_count = 0
         self.data_count = 0
