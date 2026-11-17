@@ -5,14 +5,22 @@ from struct import pack
 def binary_function(data: list[tuple[str, ...]], instructions: list[tuple[str, ...]]) -> None:
     # ячейка 0 занята под адрес mmio ввода
     # ячейка 1 занята под адрес mmio вывода
-    address_data = 2
+    # ячейка 2 занята под адрес обработчика ввода
+    # ячейка 3 занята под адрес обработчика вывода
+    address_data = 4
     address_instructions = 0
 
     data_labels: dict[str, int] = make_data_labels(data, address_data)
     instructions_labels: dict[str, int] = make_instructions_label(instructions, address_instructions)
 
+    irq_input_addr = instructions_labels["$func_irq_input"]
+    irq_output_addr = instructions_labels["$func_irq_output"]
+
     instructions_binary = make_binary_instructions(instructions, data_labels, instructions_labels)
     data_binary = make_binary_data(data)
+
+    data_binary.insert(0, irq_output_addr)
+    data_binary.insert(0, irq_input_addr)
 
     instructions_hex = make_hex_instructions(instructions, instructions_binary)
     data_hex = make_hex_data(data, data_binary, address_data)
@@ -165,8 +173,9 @@ def make_hex_instructions(instructions: list[tuple[str, ...]], instructions_bina
 
 
 def make_hex_data(data: list[tuple[str, ...]], data_binary: list[int], address_data: int) -> list[str]:
-    lines: list[str] = []
-    index = 0
+    lines: list[str] = [f"0x0002   -   {data_binary[0]:08X}   -   $func_irq_input",
+                        f"0x0003   -   {data_binary[1]:08X}   -   $func_irq_output"]
+    index = 2
 
     for record in data:
         if len(record) == 1:

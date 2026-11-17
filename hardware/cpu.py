@@ -14,6 +14,11 @@ class CPU:
         self.ar = 0
         self.halted = False
 
+        self.interrupts_enable = True
+        self.in_interrupts = False
+        self.pending_interrupts = None
+        self.interrupt_return_pc = None
+
         self.instruction_memory = instruction_memory
         self.data_memory = data_memory
 
@@ -275,7 +280,11 @@ class CPU:
                 self.execute_step = 0
 
         if opcode == OPCODE_TABLE["iret"][0]:
-            pass
+            self.branch(self.interrupt_return_pc)
+
+            self.interrupt_return_pc = None
+            self.in_interrupts = False
+            self.interrupts_enable = True
 
         if opcode == OPCODE_TABLE["halt"][0]:
             self.halted = True
@@ -321,10 +330,10 @@ class CPU:
                 self.execute_step = 0
 
         if opcode == OPCODE_TABLE["ei"][0]:
-            pass
+            self.interrupts_enable = True
 
         if opcode == OPCODE_TABLE["di"][0]:
-            pass
+            self.interrupts_enable = False
 
         if opcode == OPCODE_TABLE["jump"][0]:
             self.branch(operand)

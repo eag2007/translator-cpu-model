@@ -1,15 +1,14 @@
-from compiler.binary import binary_function
 from compiler.compile import Compile
 from compiler.lexer import Lexer
 from compiler.parser import Parser
 from pprint import pprint
 from compiler.binary import binary_function
-
+from hardware.machine import Machine
 
 with open("compiler/system.lisp", "r") as f:
     _system_ = f.read()
 
-with open("example/format_string.lisp", "r") as f:
+with open("example/a_add_b.lisp", "r") as f:
     s = f.read()
 
 lexer = Lexer()
@@ -30,3 +29,10 @@ compilator = Compile()
 compilator.load_ast(ast_tree)
 
 binary_function(compilator.get_data(), compilator.get_instructions())
+
+with open("./output/logs/main.log", "w") as f:
+    print(file=f, end="")
+
+machine = Machine("./output/logs/main.log")
+machine.load_program("/home/evgeniy/PycharmProjects/computer-architecture/output/bin/main.bin")
+machine.run()

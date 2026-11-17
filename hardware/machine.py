@@ -5,10 +5,11 @@ from config import WORD_SIZE
 from hardware.cpu import CPU
 from hardware.memory import InstructionMemory, DataMemory
 from hardware.pipeline import Pipeline
+from logger import Logger
 
 
 class Machine:
-    def __init__(self):
+    def __init__(self, path_output):
         self.instruction_memory = InstructionMemory()
         self.data_memory = DataMemory()
         self.pipeline = Pipeline()
@@ -17,6 +18,29 @@ class Machine:
         self.instruction_count = 0
         self.data_count = 0
         self.tick_count = 0
+
+        import os
+
+        print(os.path.abspath(__file__))
+        self.logger = Logger(path_output)
+
+    def run(self):
+        while not self.cpu.halted:
+            ex_state = (
+                self.cpu.pipeline.id_ex_pc,
+                self.cpu.pipeline.id_ex_opcode,
+                self.cpu.pipeline.id_ex_operand,
+                self.cpu.execute_step,
+            )
+
+            self.cpu.tick()
+            self.tick_count += 1
+
+            self.logger.log(
+                self.cpu,
+                self.tick_count,
+                ex_state,
+            )
 
     def load_program(self, path: str):
         binary_file = Path(path).read_bytes()
