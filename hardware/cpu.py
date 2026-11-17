@@ -16,8 +16,11 @@ class CPU:
 
         self.interrupts_enable = True
         self.in_interrupts = False
-        self.pending_interrupts = None
+        self.pending_interrupts = False
         self.interrupt_return_pc = None
+
+        self.interrupt_saved_acc = None
+        self.interrupt_saved_flags = None
 
         self.instruction_memory = instruction_memory
         self.data_memory = data_memory
@@ -280,6 +283,9 @@ class CPU:
                 self.execute_step = 0
 
         if opcode == OPCODE_TABLE["iret"][0]:
+            self.acc = self.interrupt_saved_acc
+            self.flags = self.interrupt_saved_flags.copy()
+
             self.branch(self.interrupt_return_pc)
 
             self.interrupt_return_pc = None
@@ -394,6 +400,10 @@ class CPU:
         if self.halted:
             return
 
+        if self.pending_interrupts:
+            if self.accept_interrupt():
+                return
+
         # ID
         self.decode_fetch()
 
@@ -401,3 +411,40 @@ class CPU:
         self.instruction_fetch()
 
         self.pc += 1
+
+    def request_interrupt(self):
+        if not self.interrupts_enable:
+            return
+
+        if self.in_interrupts:
+            return
+
+        self.pending_interrupts = True
+
+    def accept_interrupt(self):
+        self.interrupt_saved_acc = self.acc
+        self.interrupt_saved_flags = self.flags.copy()
+
+        if self.pipeline.if_id_instruction is not None:
+            self.interrupt_return_pc = self.pipeline.if_id_pc
+        else:
+            self.interrupt_return_pc = self.pc
+
+        handler_address = self.data_memory.load(2)
+
+        self.pending_interrupts = False
+        self.interrupts_enable = False
+        self.in_interrupts = True
+
+        self.pipeline.if_id_instruction = None
+        self.pipeline.if_id_pc = None
+
+        self.pipeline.id_ex_pc = None
+        self.pipeline.id_ex_opcode = None
+        self.pipeline.id_ex_operand = None
+
+        self.execute_step = 0
+
+        self.pc = handler_address
+
+        return True

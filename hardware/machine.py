@@ -3,29 +3,38 @@ from pathlib import Path
 
 from config import WORD_SIZE
 from hardware.cpu import CPU
+from hardware.interrupts import Interrupts
 from hardware.memory import InstructionMemory, DataMemory
 from hardware.pipeline import Pipeline
 from logger import Logger
 
 
 class Machine:
-    def __init__(self, path_output):
+    def __init__(self, path_output, input_schedule):
         self.instruction_memory = InstructionMemory()
         self.data_memory = DataMemory()
         self.pipeline = Pipeline()
         self.cpu = CPU(self.instruction_memory, self.data_memory, self.pipeline)
+        self.interrupts = Interrupts(input_schedule)
 
         self.instruction_count = 0
         self.data_count = 0
         self.tick_count = 0
 
-        import os
-
-        print(os.path.abspath(__file__))
         self.logger = Logger(path_output)
 
     def run(self):
         while not self.cpu.halted:
+            self.tick_count += 1
+
+            event = self.interrupts.tick(
+                self.tick_count,
+                self.data_memory
+            )
+
+            if event == "input":
+                self.cpu.request_interrupt()
+
             ex_state = (
                 self.cpu.pipeline.id_ex_pc,
                 self.cpu.pipeline.id_ex_opcode,
@@ -34,7 +43,6 @@ class Machine:
             )
 
             self.cpu.tick()
-            self.tick_count += 1
 
             self.logger.log(
                 self.cpu,

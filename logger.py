@@ -1,5 +1,3 @@
-from sys import path
-
 from config import OPCODE_TABLE
 
 
