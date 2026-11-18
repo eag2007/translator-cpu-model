@@ -1,3 +1,6 @@
+from config import WORD_SIZE
+
+
 class Interrupts:
     def __init__(self, input_schedule):
         self.input_schedule = {_tick: _char for _char, _tick in input_schedule}
@@ -16,7 +19,7 @@ class Interrupts:
         return 1
 
     def tick_output(self, tick_count, data_memory):
-        if data_memory.load(7) == 1:
+        if data_memory.load(7 * WORD_SIZE) == 1:
             return 1
 
         return 0

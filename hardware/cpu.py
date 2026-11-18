@@ -241,7 +241,7 @@ class CPU:
 
         if opcode == OPCODE_TABLE["call"][0]:
             if self.execute_step == 0:
-                self.sp = self.alu(self.sp, 1, "sub", update_flags=False)
+                self.sp = self.alu(self.sp, WORD_SIZE, "sub", update_flags=False)
                 self.execute_step = 1
                 return False
 
@@ -251,7 +251,7 @@ class CPU:
                 return False
 
             if self.execute_step == 2:
-                self.dr = self.alu(self.pipeline.id_ex_pc, 1, "add", update_flags=False)
+                self.dr = self.alu(self.pipeline.id_ex_pc, WORD_SIZE, "add", update_flags=False)
                 self.execute_step = 3
                 return False
 
@@ -276,7 +276,7 @@ class CPU:
                 return False
 
             if self.execute_step == 2:
-                self.sp = self.alu(self.sp, 1, "add", update_flags=False)
+                self.sp = self.alu(self.sp, WORD_SIZE, "add", update_flags=False)
                 self.execute_step = 3
                 return False
 
@@ -299,7 +299,7 @@ class CPU:
 
         if opcode == OPCODE_TABLE["push"][0]:
             if self.execute_step == 0:
-                self.sp = self.alu(self.sp, 1, "sub", update_flags=False)
+                self.sp = self.alu(self.sp, WORD_SIZE, "sub", update_flags=False)
                 self.execute_step = 1
                 return False
 
@@ -334,7 +334,7 @@ class CPU:
                 return False
 
             if self.execute_step == 3:
-                self.sp = self.alu(self.sp, 1, "add", update_flags=False)
+                self.sp = self.alu(self.sp, WORD_SIZE, "add", update_flags=False)
                 self.execute_step = 0
 
         if opcode == OPCODE_TABLE["ei"][0]:
@@ -417,7 +417,7 @@ class CPU:
         # IF
         self.instruction_fetch()
 
-        self.pc += 1
+        self.pc += WORD_SIZE
 
     def request_interrupt(self, source):
         if not self.interrupts_enable or self.in_interrupts:
@@ -438,7 +438,7 @@ class CPU:
         else:
             self.interrupt_return_pc = self.pc
 
-        handler_address = self.data_memory.load(2 if self.pending_interrupts_source == "input" else 3)
+        handler_address = self.data_memory.load(2 * WORD_SIZE if self.pending_interrupts_source == "input" else 3 * WORD_SIZE)
 
         self.pending_interrupts = False
         self.pending_interrupts_source = None

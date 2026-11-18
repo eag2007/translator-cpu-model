@@ -46,8 +46,8 @@ class Machine:
 
             self.cpu.tick()
 
-            if output_event == 1 and self.data_memory.load(7) == 0:
-                self.output_buffer.append(self.data_memory.load(1))
+            if output_event == 1 and self.data_memory.load(7 * WORD_SIZE) == 0:
+                self.output_buffer.append(self.data_memory.load(WORD_SIZE))
 
             self.logger.log(
                 self.cpu,
@@ -79,9 +79,9 @@ class Machine:
         offset += data_count * WORD_SIZE
 
         for address, instruction in enumerate(instructions):
-            self.instruction_memory.store(address, instruction)
+            self.instruction_memory.store(address * WORD_SIZE, instruction)
         self.instruction_count = instruction_count
 
         for address, record in enumerate(data, start=2):
-            self.data_memory.store(address, record)
+            self.data_memory.store(address * WORD_SIZE, record)
         self.data_count = data_count
