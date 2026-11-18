@@ -1,52 +1,98 @@
+import argparse
+import ast
+import sys
+from pathlib import Path
+from pprint import pprint
+
+from compiler.binary import binary_function
 from compiler.compile import Compile
 from compiler.lexer import Lexer
 from compiler.parser import Parser
-from pprint import pprint
-from compiler.binary import binary_function
 from hardware.machine import Machine
 
-with open("compiler/system.lisp", "r") as f:
-    _system_ = f.read()
 
-with open("example/format_string.lisp", "r") as f:
-    s = f.read()
+if __name__ == "__main__":
+    if len(sys.argv) == 2 and sys.argv[1] == "clear":
+        output_path = Path("output")
 
-lexer = Lexer()
-lexer.load_source(_system_ + "\n" + s)
+        if output_path.exists():
+            for path in sorted(output_path.rglob("*"), reverse=True):
+                if path.is_file():
+                    path.unlink()
+                elif path.is_dir():
+                    path.rmdir()
 
-tokens = lexer.get_tokens()
-with open("./output/tokens/tokens.conf", "w") as f:
-    pprint(tokens, stream=f, width=80, sort_dicts=False)
+        print("папка output очищена")
+        exit()
 
-parser = Parser()
-parser.load_tokens(tokens)
+    parser = argparse.ArgumentParser()
 
-ast_tree = parser.parse()
-with open("./output/expressions/expressions.conf", "w") as f:
-    pprint(ast_tree, stream=f, width=80, sort_dicts=False)
+    parser.add_argument("source", help="файл программы на lisp")
+    parser.add_argument("--input", help="файл расписания ввода")
+    parser.add_argument("--pipeline", help="запуск процессора с конвеером")
 
-compilator = Compile()
-compilator.load_ast(ast_tree)
+    arg = parser.parse_args()
 
-binary_function(compilator.get_data(), compilator.get_instructions())
+    if not arg.pipeline:
+        print("режим без конвеера еще не реализован")
+        exit()
 
-with open("./output/logs/main.log", "w") as f:
-    print(file=f, end="")
+    source_path = Path(arg.source)
+    name = source_path.stem
 
-machine = Machine("./output/logs/main.log", [
-    ("F", 1000),
-    ("%", 1400),
-    ("4", 1800),
-    ("d", 2200),
-    (" ", 2600),
-    ("r", 3000),
-    ("u", 3400),
-    ("b", 3800),
-    ("\0", 4200),
-    ("\0", 4600),
+    input_schedule = []
 
-    (42, 5000),
-])
+    if arg.input:
+        input_text = Path(arg.input).read_text(encoding="utf-8")
+        input_schedule = ast.literal_eval(input_text)
 
-machine.load_program("/home/evgeniy/PycharmProjects/computer-architecture/output/bin/main.bin")
-machine.run()
+    output_path = Path("output")
+    for directory in ("asm", "bin", "expressions", "hex", "logs", "tokens", "results"):
+        (output_path / directory).mkdir(parents=True, exist_ok=True)
+
+    asm_path = output_path / "asm" / f"{name}.asm"
+    bin_path = output_path / "bin" / f"{name}.asm"
+    expressions_path = output_path / "expressions" / f"{name}.conf"
+    hex_path = output_path / "hex" / f"{name}.hex"
+    logs_path = output_path / "logs" / f"{name}.log"
+    tokens_path = output_path / "tokens" / f"{name}.conf"
+    results_path = output_path / "results" / f"{name}.text"
+
+    system_source = Path("compiler/system.lisp").read_text(encoding="utf-8")
+    program_source = source_path.read_text(encoding="utf-8")
+
+    lexer = Lexer()
+    lexer.load_source(system_source + "\n" + program_source)
+    tokens = lexer.get_tokens()
+
+    with open(tokens_path, "w", encoding="utf-8") as file:
+        pprint(tokens, stream=file, width=80, sort_dicts=False)
+
+    program_parser = Parser()
+    program_parser.load_tokens(tokens)
+    ast_tree = program_parser.parse()
+
+    with open(expressions_path, "w", encoding="utf-8") as file:
+        pprint(ast_tree, stream=file, width=80, sort_dicts=False)
+
+    compiler = Compile()
+    compiler.load_ast(ast_tree)
+    data, instructions = compiler.get_data(), compiler.get_instructions()
+
+    with open(asm_path, "w", encoding="utf-8") as file:
+        for i in data:
+            print(f"{i[0]:<24} {' '.join(i[1:])}".rstrip(), file=file)
+
+        for i in instructions:
+            if i[0].endswith(":"):
+                print(i[0], file=file)
+            else:
+                print(f"    {i[0]:<8} {' '.join(i[1:])}".rstrip(), file=file)
+
+    binary_function(data, instructions, bin_path, hex_path)
+
+    logs_path.write_text("", encoding="utf-8")
+
+    machine = Machine(logs_path, results_path, input_schedule)
+    machine.load_program(bin_path)
+    machine.run()

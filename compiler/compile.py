@@ -34,27 +34,12 @@ class Compile:
         self.__select(self.ast)
         self.__translate(self.ast)
         self.instructions += [("HALT",)]
-        self.save_asm()
 
     def get_data(self):
         return self.data
 
     def get_instructions(self):
         return self.instructions
-
-    def save_asm(self):
-        """Сохраняет assembler код в файл
-            :return None
-        """
-        with open("./output/asm/main.asm", "w") as f:
-            for i in self.data:
-                print(f"{i[0]:<24} {' '.join(i[1:])}".rstrip(), file=f)
-
-            for i in self.instructions:
-                if i[0].endswith(":"):
-                    print(i[0], file=f)
-                else:
-                    print(f"    {i[0]:<8} {' '.join(i[1:])}".rstrip(), file=f)
 
     def __push(self):
         """Кладет значение из ACC в верхушку стека, меняет глубину стека

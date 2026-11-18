@@ -10,7 +10,7 @@ from logger import Logger
 
 
 class Machine:
-    def __init__(self, path_output, input_schedule):
+    def __init__(self, path_output, result_path, input_schedule):
         self.instruction_memory = InstructionMemory()
         self.data_memory = DataMemory()
         self.pipeline = Pipeline()
@@ -23,6 +23,7 @@ class Machine:
         self.tick_count = 0
 
         self.logger = Logger(path_output)
+        self.result_path = result_path
 
     def run(self):
         while not self.cpu.halted and self.tick_count <= 100_000:
@@ -55,10 +56,14 @@ class Machine:
             )
 
         print(self.output_buffer)
-        print(''.join(chr(i) for i in self.output_buffer))
+        print(''.join(chr(i) for i in self.output_buffer if isinstance(i, int) and 0 <= i <= 255))
 
-    def load_program(self, path: str):
-        binary_file = Path(path).read_bytes()
+        with open(self.result_path, "w", encoding="utf-8") as file:
+            print(self.output_buffer, file=file)
+            print(''.join(chr(i) for i in self.output_buffer if isinstance(i, int) and 0 <= i <= 255), file=file)
+
+    def load_program(self, path: Path):
+        binary_file = path.read_bytes()
         offset = 0
 
         instruction_count = struct.unpack_from(">I", binary_file, offset)[0]

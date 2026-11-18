@@ -2,7 +2,7 @@ from config import OPCODE_TABLE
 from struct import pack
 
 
-def binary_function(data: list[tuple[str, ...]], instructions: list[tuple[str, ...]]) -> None:
+def binary_function(data: list[tuple[str, ...]], instructions: list[tuple[str, ...]], bin_path, hex_path) -> None:
     # ячейка 0 занята под адрес mmio ввода
     # ячейка 1 занята под адрес mmio вывода
     # ячейка 2 занята под адрес обработчика ввода
@@ -25,7 +25,7 @@ def binary_function(data: list[tuple[str, ...]], instructions: list[tuple[str, .
     instructions_hex = make_hex_instructions(instructions, instructions_binary)
     data_hex = make_hex_data(data, data_binary, address_data)
 
-    with open("output/bin/main.bin", "wb") as file:
+    with open(bin_path, "wb") as file:
         file.write(pack(">I", len(instructions_binary)))
 
         for instruction_bin in instructions_binary:
@@ -35,7 +35,7 @@ def binary_function(data: list[tuple[str, ...]], instructions: list[tuple[str, .
         for data_bin in data_binary:
             file.write(pack(">I", data_bin))
 
-    with open("output/hex/main.hex", "w", encoding="UTF-8") as file:
+    with open(hex_path, "w", encoding="UTF-8") as file:
         file.write(f"[instructions: {len(instructions_binary)} words]\n")
         file.write("\n".join(instructions_hex))
 
