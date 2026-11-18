@@ -218,6 +218,9 @@ class Lexer:
                 self.tokens.append(Token(TokenType.IDENTIFIER, value))
                 self.position = end
 
+            elif mask1 == "#":
+                self.position = self.source.find("\n", self.position) + 1
+
             else:
                 self.position += 1
 

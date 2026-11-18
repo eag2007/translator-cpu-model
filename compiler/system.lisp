@@ -5,18 +5,21 @@
 (set system_out_ready 0)
 (_ei)
 
+# функция обработчика прерываний ввода
 (defunc irq_input () (
     (_di)
     (set system_in_buffer (aget 0 0))
     (set system_in_ready 1)
 ))
 
+# функция обработчика прерываний вывода
 (defunc irq_output () (
     (_di)
     (aset 1 0 system_out_buffer)
     (set system_out_ready 0)
 ))
 
+# функция для удобного вывода числа
 (defunc print_smart (n) (
     (if (< n 0) (
         (print_char 45)
