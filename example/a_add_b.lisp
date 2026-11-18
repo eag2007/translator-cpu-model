@@ -1,1 +1,1 @@
-(set x 3)
+(set x (input [5]))

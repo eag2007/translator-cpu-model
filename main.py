@@ -33,6 +33,6 @@ binary_function(compilator.get_data(), compilator.get_instructions())
 with open("./output/logs/main.log", "w") as f:
     print(file=f, end="")
 
-machine = Machine("./output/logs/main.log")
+machine = Machine("./output/logs/main.log", [("H", 50), ("e", 200), ("l", 350), ("l", 500), ("0", 650)])
 machine.load_program("/home/evgeniy/PycharmProjects/computer-architecture/output/bin/main.bin")
 machine.run()

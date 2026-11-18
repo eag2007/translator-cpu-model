@@ -6,7 +6,11 @@ class Interrupts:
         if tick_count not in self.input_schedule:
             return None
 
-        char = self.input_schedule.pop(tick_count)
-        data_memory.store(0, ord(char))
+        value = self.input_schedule.pop(tick_count)
+
+        if isinstance(value, str):
+            value = ord(value)
+
+        data_memory.store(0, value)
 
         return "input"
