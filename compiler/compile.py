@@ -1,4 +1,5 @@
 from compiler.parser import *
+from config import WORD_SIZE
 
 
 class Compile:
@@ -62,7 +63,7 @@ class Compile:
         """
         if name in self.stack_ident:
             offset = self.stack_ident[name] - self.stack_depth - 1
-            return True, str(offset)
+            return True, str(offset * WORD_SIZE)
         return False, name
 
     def __translate(self, ast_tree):
@@ -320,7 +321,7 @@ class Compile:
             ("EI",),
 
             ("LOAD", ptr),
-            ("ADDI", "1"),
+            ("ADDI", str(WORD_SIZE)),
             ("STORE", ptr),
             ("JUMP", loop),
             (end + ":",)
@@ -370,7 +371,7 @@ class Compile:
         self.instructions += [
             ("STORE_IND", "$tmp_address$"),
             ("LOAD", "$tmp_address$"),
-            ("ADDI", "1"),
+            ("ADDI", str(WORD_SIZE)),
             ("STORE", "$tmp_address$"),
             ("LOAD", "$tmp$"),
             ("SUBI", "1"),
@@ -801,6 +802,7 @@ class Compile:
         self.__translate_expr(address)
         self.__push()
         self.__translate_expr(index)
+        self.instructions += [("MULI", str(WORD_SIZE))]
         self.instructions += [
             ("STORE", "$tmp$")
         ]
@@ -819,13 +821,10 @@ class Compile:
         self.__translate_expr(address)
         self.__push()
         self.__translate_expr(index)
-        self.instructions += [
-            ("STORE", "$tmp$")
-        ]
+        self.instructions += [("MULI", str(WORD_SIZE))]
+        self.instructions += [("STORE", "$tmp$")]
         self.__pop()
-        self.instructions += [
-            ("ADD", "$tmp$")
-        ]
+        self.instructions += [("ADD", "$tmp$")]
         self.__push()
         self.__translate_expr(value)
 
@@ -855,6 +854,7 @@ class Compile:
         self.__translate_expr(address)
         self.__push()
         self.__translate_expr(index)
+        self.instructions += [("MULI", str(WORD_SIZE))]
 
         self.instructions += [("STORE", "$tmp$")]
         self.__pop()
@@ -873,6 +873,7 @@ class Compile:
         self.__translate_expr(address)
         self.__push()
         self.__translate_expr(index)
+        self.instructions += [("MULI", str(WORD_SIZE))]
 
         self.instructions += [("STORE", "$tmp$")]
 

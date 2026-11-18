@@ -1,4 +1,4 @@
-from config import MEMORY_SIZE, OPCODE_TABLE, IMM_BINARY_OPS, MEM_BINARY_OPS
+from config import MEMORY_SIZE, OPCODE_TABLE, IMM_BINARY_OPS, MEM_BINARY_OPS, WORD_SIZE
 from hardware.memory import InstructionMemory, DataMemory
 from hardware.pipeline import Pipeline
 

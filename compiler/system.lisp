@@ -15,7 +15,7 @@
 # функция обработчика прерываний вывода
 (defunc irq_output () (
     (_di)
-    (aset 1 0 system_out_buffer)
+    (aset 4 0 system_out_buffer)
     (set system_out_ready 0)
 ))
 
@@ -70,3 +70,17 @@
         (set divider (/ divider 10))
     ))
 ))
+
+
+
+# функция подсчёта длины строки
+(defunc len (text) (
+    (set length 0)
+    (while (!= (getchar text length) 0) (
+        (set length (+ length 1))
+    ))
+    length
+))
+
+
+

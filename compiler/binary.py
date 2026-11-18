@@ -1,13 +1,13 @@
-from config import OPCODE_TABLE
+from config import OPCODE_TABLE, WORD_SIZE
 from struct import pack
 
 
 def binary_function(data: list[tuple[str, ...]], instructions: list[tuple[str, ...]], bin_path, hex_path) -> None:
-    # ячейка 0 занята под адрес mmio ввода
-    # ячейка 1 занята под адрес mmio вывода
-    # ячейка 2 занята под адрес обработчика ввода
-    # ячейка 3 занята под адрес обработчика вывода
-    address_data = 4
+    # ячейка 0x00-0x03 занята под адрес mmio ввода
+    # ячейка 0x04-0x07 занята под адрес mmio вывода
+    # ячейка 0x08-0x0B занята под адрес обработчика ввода
+    # ячейка 0x0C-0x0F занята под адрес обработчика вывода
+    address_data = 4 * WORD_SIZE
     address_instructions = 0
 
     data_labels: dict[str, int] = make_data_labels(data, address_data)
@@ -60,7 +60,7 @@ def make_data_labels(data, data_counter: int) -> dict[str, int]:
             data_labels[label[:-1]] = data_counter
             continue
 
-        data_counter += 1
+        data_counter += WORD_SIZE
     return data_labels
 
 
@@ -75,7 +75,7 @@ def make_instructions_label(instructions, instruction_counter: int) -> dict[str,
             instructions_labels[label[:-1]] = instruction_counter
             continue
 
-        instruction_counter += 1
+        instruction_counter += WORD_SIZE
     return instructions_labels
 
 
@@ -166,15 +166,15 @@ def make_hex_instructions(instructions: list[tuple[str, ...]], instructions_bina
                 argument = f"0x{operand:04X}"
 
         mnemonic = f"{command.lower()   :<12}{argument}"
-        lines.append(f"0x{index:04X}   -   {word:08X}   -   {mnemonic}".rstrip())
+        lines.append(f"0x{index * WORD_SIZE:04X}   -   {word:08X}   -   {mnemonic}".rstrip())
         index += 1
 
     return lines
 
 
 def make_hex_data(data: list[tuple[str, ...]], data_binary: list[int], address_data: int) -> list[str]:
-    lines: list[str] = [f"0x0002   -   {data_binary[0]:08X}   -   $func_irq_input",
-                        f"0x0003   -   {data_binary[1]:08X}   -   $func_irq_output"]
+    lines: list[str] = [f"0x0008   -   {data_binary[0]:08X}   -   $func_irq_input",
+                        f"0x000C   -   {data_binary[1]:08X}   -   $func_irq_output"]
     index = 2
 
     for record in data:
@@ -185,6 +185,6 @@ def make_hex_data(data: list[tuple[str, ...]], data_binary: list[int], address_d
         value = 0 if record[-1] == "?" else int(record[-1])
         lines.append(f"0x{address_data:04X}   -   {word:08X}   -   {'.word':<12}{value}")
         index += 1
-        address_data += 1
+        address_data += WORD_SIZE
 
     return lines
