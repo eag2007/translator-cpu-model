@@ -25,7 +25,7 @@ class Machine:
         self.logger = Logger(path_output)
 
     def run(self):
-        while not self.cpu.halted:
+        while not self.cpu.halted and self.tick_count <= 100_000:
             self.tick_count += 1
 
             input_event = self.interrupts.tick_input(self.tick_count, self.data_memory)

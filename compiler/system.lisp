@@ -19,7 +19,10 @@
     (set system_out_ready 0)
 ))
 
-# функция для удобного вывода числа
+
+
+
+# функция для удобного вывода числа заканчивается символом конца строки
 (defunc print_smart (n) (
     (if (< n 0) (
         (print_char 45)
@@ -41,4 +44,29 @@
     ))
 
     (print_char 10)
+))
+
+
+
+
+# функция для удобного вывода числа не заканчивается символом конца строки
+(defunc print_smart_inline (n) (
+    (if (< n 0) (
+        (print_char 45)
+    )
+    (else (
+        (set n (- 0 n))
+    )))
+
+    (set divider 1)
+
+    (while (<= (/ n divider) -10) (
+        (set divider (* divider 10))
+    ))
+
+    (while (> divider 0) (
+        (print_char (+ (- 0 (/ n divider)) 48))
+        (set n (% n divider))
+        (set divider (/ divider 10))
+    ))
 ))

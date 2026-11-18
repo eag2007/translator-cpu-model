@@ -30,7 +30,7 @@
     length
 ))
 
-(set fmt (input [32]))
+(set fmt (input [10]))
 (set i 0)
 
 (while (!= (getchar fmt i) 0) (
@@ -62,7 +62,7 @@
                 ))
             ))
 
-            (print_number number)
+            (funcall print_smart_inline (number))
 
             (if (== left 1) (
                 (repeat spaces (
@@ -73,8 +73,8 @@
             (set i (+ j 1))
         )
         (else (
-            (print_char c)
-            (set i (+ i 1))
+            (funcall print_smart_inline (-1))
+            (set i 10)
         )))
     )
     (else (

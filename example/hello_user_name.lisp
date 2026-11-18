@@ -1,0 +1,11 @@
+(print_string "What is your name?")
+(set name (input [5]))
+
+(print_char 72)
+(print_char 101)
+(print_char 108)
+(print_char 108)
+(print_char 111)
+(print_char 44)
+(print_char 32)
+(print_string name)

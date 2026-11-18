@@ -43,6 +43,15 @@ class Logger:
 
             print("=" * 60, file=f)
             print(f"TICK {tick_count}", file=f)
+            if cpu.in_interrupts:
+                print(" --- INTERRUPT HANDLER ---", file=f)
+                print(
+                    f"IRQ:\tIN_HANDLER={int(cpu.in_interrupts)}\t"
+                    f"ENABLED={int(cpu.interrupts_enable)}\t"
+                    f"PENDING={int(cpu.pending_interrupts)}\t"
+                    f"RETURN_PC={int(cpu.interrupt_return_pc)}",
+                    file=f,
+                )
             print(file=f)
 
             print(
