@@ -1,1 +1,2 @@
-(set x (input [5]))
+(funcall print_smart (890))
+(funcall print_smart (-890))

@@ -33,6 +33,18 @@ binary_function(compilator.get_data(), compilator.get_instructions())
 with open("./output/logs/main.log", "w") as f:
     print(file=f, end="")
 
-machine = Machine("./output/logs/main.log", [("H", 50), ("e", 200), ("l", 350), ("l", 500), ("0", 650)])
+machine = Machine("./output/logs/main.log", [
+    ("%", 50), ("9", 200), ("d", 350),
+    ("\0", 500), ("\0", 650), ("\0", 800), ("\0", 950),
+    ("\0", 1100), ("\0", 1250), ("\0", 1400), ("\0", 1550),
+    ("\0", 1700), ("\0", 1850), ("\0", 2000), ("\0", 2150),
+    ("\0", 2300), ("\0", 2450), ("\0", 2600), ("\0", 2750),
+    ("\0", 2900), ("\0", 3050), ("\0", 3200), ("\0", 3350),
+    ("\0", 3500), ("\0", 3650), ("\0", 3800), ("\0", 3950),
+    ("\0", 4100), ("\0", 4250), ("\0", 4400), ("\0", 4550),
+    ("\0", 4700),
+    (-7, 6000),
+])
+
 machine.load_program("/home/evgeniy/PycharmProjects/computer-architecture/output/bin/main.bin")
 machine.run()

@@ -22,6 +22,8 @@ class CPU:
         self.interrupt_saved_acc = None
         self.interrupt_saved_flags = None
 
+        self.pending_interrupts_source = None
+
         self.instruction_memory = instruction_memory
         self.data_memory = data_memory
 
@@ -390,8 +392,13 @@ class CPU:
         return result
 
     def tick(self):
-        if self.halted:
-            return
+        if self.pending_interrupts and self.execute_step == 0:
+            return_pc = self.pipeline.id_ex_pc
+
+            if self.accept_interrupt():
+                if return_pc is not None:
+                    self.interrupt_return_pc = return_pc
+                return
 
         # EX
         if not self.execute_fetch():
@@ -412,13 +419,14 @@ class CPU:
 
         self.pc += 1
 
-    def request_interrupt(self):
-        if not self.interrupts_enable:
+    def request_interrupt(self, source):
+        if not self.interrupts_enable or self.in_interrupts:
             return
 
-        if self.in_interrupts:
+        if self.pending_interrupts:
             return
 
+        self.pending_interrupts_source = source
         self.pending_interrupts = True
 
     def accept_interrupt(self):
@@ -430,9 +438,10 @@ class CPU:
         else:
             self.interrupt_return_pc = self.pc
 
-        handler_address = self.data_memory.load(2)
+        handler_address = self.data_memory.load(2 if self.pending_interrupts_source == "input" else 3)
 
         self.pending_interrupts = False
+        self.pending_interrupts_source = None
         self.interrupts_enable = False
         self.in_interrupts = True
 

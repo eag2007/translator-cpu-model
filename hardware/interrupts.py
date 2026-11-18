@@ -2,9 +2,9 @@ class Interrupts:
     def __init__(self, input_schedule):
         self.input_schedule = {_tick: _char for _char, _tick in input_schedule}
 
-    def tick(self, tick_count, data_memory):
+    def tick_input(self, tick_count, data_memory):
         if tick_count not in self.input_schedule:
-            return None
+            return 0
 
         value = self.input_schedule.pop(tick_count)
 
@@ -13,4 +13,10 @@ class Interrupts:
 
         data_memory.store(0, value)
 
-        return "input"
+        return 1
+
+    def tick_output(self, tick_count, data_memory):
+        if data_memory.load(7) == 1:
+            return 1
+
+        return 0

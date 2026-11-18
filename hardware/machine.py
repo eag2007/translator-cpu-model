@@ -16,6 +16,7 @@ class Machine:
         self.pipeline = Pipeline()
         self.cpu = CPU(self.instruction_memory, self.data_memory, self.pipeline)
         self.interrupts = Interrupts(input_schedule)
+        self.output_buffer = []
 
         self.instruction_count = 0
         self.data_count = 0
@@ -27,13 +28,13 @@ class Machine:
         while not self.cpu.halted:
             self.tick_count += 1
 
-            event = self.interrupts.tick(
-                self.tick_count,
-                self.data_memory
-            )
+            input_event = self.interrupts.tick_input(self.tick_count, self.data_memory)
+            output_event = self.interrupts.tick_output(self.tick_count, self.data_memory)
 
-            if event == "input":
-                self.cpu.request_interrupt()
+            if input_event:
+                self.cpu.request_interrupt("input")
+            if output_event:
+                self.cpu.request_interrupt("output")
 
             ex_state = (
                 self.cpu.pipeline.id_ex_pc,
@@ -44,11 +45,17 @@ class Machine:
 
             self.cpu.tick()
 
+            if output_event == 1 and self.data_memory.load(7) == 0:
+                self.output_buffer.append(self.data_memory.load(1))
+
             self.logger.log(
                 self.cpu,
                 self.tick_count,
                 ex_state,
             )
+
+        print(self.output_buffer)
+        print(''.join(chr(i) for i in self.output_buffer))
 
     def load_program(self, path: str):
         binary_file = Path(path).read_bytes()

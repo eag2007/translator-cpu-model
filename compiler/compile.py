@@ -17,7 +17,7 @@ class Compile:
                 (a: -12, b: -8)
         """
         self.instructions = [("_start:",)]
-        self.identifiers = set()
+        self.identifiers = []
         self.ast = []
         self.label_count = 0
         self.data = []
@@ -76,7 +76,7 @@ class Compile:
             :return str:            возвращает метку или соответсвующее смешение в стеке, где лежит переменная
         """
         if name in self.stack_ident:
-            offset = self.stack_ident[name] - self.stack_depth
+            offset = self.stack_ident[name] - self.stack_depth - 1
             return True, str(offset)
         return False, name
 
@@ -299,6 +299,7 @@ class Compile:
 
     def __translate_expr_print_number(self, expression: PrintNumberExpr):
         self.__move_from_acc_to_buffer(expression)
+        self.__move_from_acc_to_buffer(PrintCharExpr(NumberExpr(10)))
 
     def __translate_expr_print_string(self, expression: PrintStringExpr):
         ptr = self.__new_label("print_str_ptr")
@@ -339,6 +340,7 @@ class Compile:
             ("JUMP", loop),
             (end + ":",)
         ]
+        self.__move_from_acc_to_buffer(PrintCharExpr(NumberExpr(10)))
 
     def __translate_expr_input_number(self):
         label_wait = self.__new_label("in_nbr_wait")
@@ -921,8 +923,10 @@ class Compile:
         for element_ast in ast_tree:
             self.__select_identifiers(element_ast, True)
 
-        self.identifiers.add('$tmp$')
-        self.identifiers.add("$tmp_address$")
+        if '$tmp$' not in self.identifiers:
+            self.identifiers.append('$tmp$')
+        if '$tmp_address$' not in self.identifiers:
+            self.identifiers.append('$tmp_address$')
 
         for identifier in self.identifiers:
             self.data.append((identifier, '.word', "0"))
@@ -934,7 +938,8 @@ class Compile:
             :return None
         """
         if isinstance(expression, SetExpr) and is_global:
-            self.identifiers.add(expression.target.name)
+            if expression.target.name not in self.identifiers:
+                self.identifiers.append(expression.target.name)
             self.__select_identifiers(expression.value, is_global)
             return
 
