@@ -1,0 +1,1974 @@
+in_source: |-
+  (set symbol (input))
+  
+  (while (!= symbol 0) (
+      (print_char symbol)
+      (set symbol (input))
+  ))
+in_schedule: |-
+  [
+      ("H", 1000),
+      ("e", 1400),
+      ("l", 1800),
+      ("l", 2200),
+      ("o", 2600),
+      ("\0", 3000),
+  ]
+in_pipeline: false
+out_stdout: |-
+  Количество тактов: 3212
+  [72, 101, 108, 108, 111]
+  Hello
+out_stderr: ''
+out_result: |-
+  Количество тактов: 3212
+  [72, 101, 108, 108, 111]
+  Hello
+out_asm: |-
+  system_in_buffer         .word 0
+  system_in_ready          .word 0
+  system_out_buffer        .word 0
+  system_out_ready         .word 0
+  symbol                   .word 0
+  $tmp$                    .word 0
+  $tmp_address$            .word 0
+  _start:
+      DI
+      LOADI    0
+      STORE    system_in_buffer
+      LOADI    0
+      STORE    system_in_ready
+      LOADI    0
+      STORE    system_out_buffer
+      LOADI    0
+      STORE    system_out_ready
+      EI
+      JUMP     end_0
+  $func_irq_input:
+      LOAD     $tmp$
+      PUSH
+      LOAD     $tmp_address$
+      PUSH
+      LOADI    0
+      DI
+      LOADI    0
+      PUSH
+      LOADI    0
+      MULI     4
+      STORE    $tmp$
+      POP
+      ADD      $tmp$
+      STORE    $tmp$
+      LOAD_IND $tmp$
+      STORE    system_in_buffer
+      LOADI    1
+      STORE    system_in_ready
+      POP
+      STORE    $tmp_address$
+      POP
+      STORE    $tmp$
+      IRET
+  end_0:
+      JUMP     end_1
+  $func_irq_output:
+      LOAD     $tmp$
+      PUSH
+      LOAD     $tmp_address$
+      PUSH
+      LOADI    0
+      DI
+      LOADI    4
+      PUSH
+      LOADI    0
+      MULI     4
+      STORE    $tmp$
+      POP
+      ADD      $tmp$
+      PUSH
+      LOAD     system_out_buffer
+      STORE    $tmp$
+      POP
+      STORE    $tmp_address$
+      LOAD     $tmp$
+      STORE_IND $tmp_address$
+      LOADI    0
+      STORE    system_out_ready
+      POP
+      STORE    $tmp_address$
+      POP
+      STORE    $tmp$
+      IRET
+  end_1:
+      JUMP     end_2
+  $func_print_smart:
+      LOADI    0
+      PUSH
+      LOAD_SP  8
+      PUSH
+      LOADI    0
+      STORE    $tmp$
+      POP
+      CMP      $tmp$
+      BGE      right_false_5
+      LOADI    1
+      JUMP     end_6
+  right_false_5:
+      LOADI    0
+  end_6:
+      CMPI     0
+      BEQ      if_false_3
+      LOADI    45
+      PUSH
+  wait_7:
+      LOAD     system_out_ready
+      CMPI     0
+      BEQ      wait_7_end
+      JUMP     wait_7
+  wait_7_end:
+      DI
+      POP
+      STORE    system_out_buffer
+      LOADI    1
+      STORE    system_out_ready
+      EI
+      LOADI    0
+      PUSH
+      LOAD_SP  12
+      STORE    $tmp$
+      POP
+      SUB      $tmp$
+      STORE_SP 8
+      JUMP     end_4
+  if_false_3:
+  end_4:
+      LOADI    1
+      STORE_SP 0
+  loop_8:
+      LOAD_SP  8
+      PUSH
+      LOAD_SP  4
+      STORE    $tmp$
+      POP
+      DIV      $tmp$
+      PUSH
+      LOADI    10
+      STORE    $tmp$
+      POP
+      CMP      $tmp$
+      BGE      lefteq_true_10
+      LOADI    0
+      JUMP     end_11
+  lefteq_true_10:
+      LOADI    1
+  end_11:
+      CMPI     0
+      BEQ      end_9
+      LOAD_SP  0
+      PUSH
+      LOADI    10
+      STORE    $tmp$
+      POP
+      MUL      $tmp$
+      STORE_SP 0
+      JUMP     loop_8
+  end_9:
+  loop_12:
+      LOAD_SP  0
+      PUSH
+      LOADI    0
+      STORE    $tmp$
+      POP
+      CMP      $tmp$
+      BEQ      left_false_15
+      BGE      left_true_14
+  left_false_15:
+      LOADI    0
+      JUMP     end_16
+  left_true_14:
+      LOADI    1
+  end_16:
+      CMPI     0
+      BEQ      end_13
+      LOAD_SP  8
+      PUSH
+      LOAD_SP  4
+      STORE    $tmp$
+      POP
+      DIV      $tmp$
+      PUSH
+      LOADI    48
+      STORE    $tmp$
+      POP
+      ADD      $tmp$
+      PUSH
+  wait_17:
+      LOAD     system_out_ready
+      CMPI     0
+      BEQ      wait_17_end
+      JUMP     wait_17
+  wait_17_end:
+      DI
+      POP
+      STORE    system_out_buffer
+      LOADI    1
+      STORE    system_out_ready
+      EI
+      LOAD_SP  8
+      PUSH
+      LOAD_SP  4
+      STORE    $tmp$
+      POP
+      MOD      $tmp$
+      STORE_SP 8
+      LOAD_SP  0
+      PUSH
+      LOADI    10
+      STORE    $tmp$
+      POP
+      DIV      $tmp$
+      STORE_SP 0
+      LOAD_SP  0
+      PUSH
+      LOADI    0
+      STORE    $tmp$
+      POP
+      CMP      $tmp$
+      BEQ      left_false_21
+      BGE      left_true_20
+  left_false_21:
+      LOADI    0
+      JUMP     end_22
+  left_true_20:
+      LOADI    1
+  end_22:
+      CMPI     0
+      BEQ      if_false_18
+      JUMP     end_19
+  if_false_18:
+  end_19:
+      JUMP     loop_12
+  end_13:
+      LOADI    10
+      PUSH
+  wait_23:
+      LOAD     system_out_ready
+      CMPI     0
+      BEQ      wait_23_end
+      JUMP     wait_23
+  wait_23_end:
+      DI
+      POP
+      STORE    system_out_buffer
+      LOADI    1
+      STORE    system_out_ready
+      EI
+      STORE    $tmp$
+      POP
+      LOAD     $tmp$
+      RET
+  end_2:
+      JUMP     end_24
+  $func_print_smart_inline:
+      LOADI    0
+      PUSH
+      LOAD_SP  8
+      PUSH
+      LOADI    0
+      STORE    $tmp$
+      POP
+      CMP      $tmp$
+      BGE      right_false_27
+      LOADI    1
+      JUMP     end_28
+  right_false_27:
+      LOADI    0
+  end_28:
+      CMPI     0
+      BEQ      if_false_25
+      LOADI    45
+      PUSH
+  wait_29:
+      LOAD     system_out_ready
+      CMPI     0
+      BEQ      wait_29_end
+      JUMP     wait_29
+  wait_29_end:
+      DI
+      POP
+      STORE    system_out_buffer
+      LOADI    1
+      STORE    system_out_ready
+      EI
+      JUMP     end_26
+  if_false_25:
+      LOADI    0
+      PUSH
+      LOAD_SP  12
+      STORE    $tmp$
+      POP
+      SUB      $tmp$
+      STORE_SP 8
+  end_26:
+      LOADI    1
+      STORE_SP 0
+  loop_30:
+      LOAD_SP  8
+      PUSH
+      LOAD_SP  4
+      STORE    $tmp$
+      POP
+      DIV      $tmp$
+      PUSH
+      LOADI    -10
+      STORE    $tmp$
+      POP
+      CMP      $tmp$
+      BEQ      lefteq_true_32
+      BGE      lefteq_false_33
+  lefteq_true_32:
+      LOADI    1
+      JUMP     end_34
+  lefteq_false_33:
+      LOADI    0
+  end_34:
+      CMPI     0
+      BEQ      end_31
+      LOAD_SP  0
+      PUSH
+      LOADI    10
+      STORE    $tmp$
+      POP
+      MUL      $tmp$
+      STORE_SP 0
+      JUMP     loop_30
+  end_31:
+  loop_35:
+      LOAD_SP  0
+      PUSH
+      LOADI    0
+      STORE    $tmp$
+      POP
+      CMP      $tmp$
+      BEQ      left_false_38
+      BGE      left_true_37
+  left_false_38:
+      LOADI    0
+      JUMP     end_39
+  left_true_37:
+      LOADI    1
+  end_39:
+      CMPI     0
+      BEQ      end_36
+      LOADI    0
+      PUSH
+      LOAD_SP  12
+      PUSH
+      LOAD_SP  8
+      STORE    $tmp$
+      POP
+      DIV      $tmp$
+      STORE    $tmp$
+      POP
+      SUB      $tmp$
+      PUSH
+      LOADI    48
+      STORE    $tmp$
+      POP
+      ADD      $tmp$
+      PUSH
+  wait_40:
+      LOAD     system_out_ready
+      CMPI     0
+      BEQ      wait_40_end
+      JUMP     wait_40
+  wait_40_end:
+      DI
+      POP
+      STORE    system_out_buffer
+      LOADI    1
+      STORE    system_out_ready
+      EI
+      LOAD_SP  8
+      PUSH
+      LOAD_SP  4
+      STORE    $tmp$
+      POP
+      MOD      $tmp$
+      STORE_SP 8
+      LOAD_SP  0
+      PUSH
+      LOADI    10
+      STORE    $tmp$
+      POP
+      DIV      $tmp$
+      STORE_SP 0
+      JUMP     loop_35
+  end_36:
+      STORE    $tmp$
+      POP
+      LOAD     $tmp$
+      RET
+  end_24:
+      JUMP     end_41
+  $func_len:
+      LOADI    0
+      PUSH
+      LOADI    0
+      STORE_SP 0
+  loop_42:
+      LOAD_SP  8
+      PUSH
+      LOAD_SP  4
+      MULI     4
+      STORE    $tmp$
+      POP
+      ADD      $tmp$
+      STORE    $tmp$
+      LOAD_IND $tmp$
+      PUSH
+      LOADI    0
+      STORE    $tmp$
+      POP
+      CMP      $tmp$
+      BEQ      not_equal_false_45
+      JUMP     not_equal_true_44
+  not_equal_false_45:
+      LOADI    0
+      JUMP     end_46
+  not_equal_true_44:
+      LOADI    1
+  end_46:
+      CMPI     0
+      BEQ      end_43
+      LOAD_SP  0
+      PUSH
+      LOADI    1
+      STORE    $tmp$
+      POP
+      ADD      $tmp$
+      STORE_SP 0
+      JUMP     loop_42
+  end_43:
+      LOAD_SP  0
+      STORE    $tmp$
+      POP
+      LOAD     $tmp$
+      RET
+  end_41:
+  in_nbr_wait_47:
+      LOAD     system_in_ready
+      CMPI     0
+      BEQ      in_nbr_wait_47
+      DI
+      LOAD     system_in_buffer
+      PUSH
+      LOADI    0
+      STORE    system_in_ready
+      POP
+      EI
+      STORE    symbol
+  loop_48:
+      LOAD     symbol
+      PUSH
+      LOADI    0
+      STORE    $tmp$
+      POP
+      CMP      $tmp$
+      BEQ      not_equal_false_51
+      JUMP     not_equal_true_50
+  not_equal_false_51:
+      LOADI    0
+      JUMP     end_52
+  not_equal_true_50:
+      LOADI    1
+  end_52:
+      CMPI     0
+      BEQ      end_49
+      LOAD     symbol
+      PUSH
+  wait_53:
+      LOAD     system_out_ready
+      CMPI     0
+      BEQ      wait_53_end
+      JUMP     wait_53
+  wait_53_end:
+      DI
+      POP
+      STORE    system_out_buffer
+      LOADI    1
+      STORE    system_out_ready
+      EI
+  in_nbr_wait_54:
+      LOAD     system_in_ready
+      CMPI     0
+      BEQ      in_nbr_wait_54
+      DI
+      LOAD     system_in_buffer
+      PUSH
+      LOADI    0
+      STORE    system_in_ready
+      POP
+      EI
+      STORE    symbol
+      JUMP     loop_48
+  end_49:
+      HALT
+out_binary: !!binary |
+  AAABnh8AAAACAAAABgAAEAIAAAAGAAAUAgAAAAYAABgCAAAABgAAHB4AAAAVAACIAQAAJBwAAAAB
+  AAAoHAAAAAIAAAAfAAAAAgAAABwAAAACAAAADgAABAYAACQdAAAACQAAJAYAACQEAAAkBgAAEAIA
+  AAEGAAAUHQAAAAYAACgdAAAABgAAJBoAAAAVAAD4AQAAJBwAAAABAAAoHAAAAAIAAAAfAAAAAgAA
+  BBwAAAACAAAADgAABAYAACQdAAAACQAAJBwAAAABAAAYBgAAJB0AAAAGAAAoAQAAJAcAACgCAAAA
+  BgAAHB0AAAAGAAAoHQAAAAYAACQaAAAAFQADMAIAAAAcAAAABQAACBwAAAACAAAABgAAJB0AAAAT
+  AAAkFwABKAIAAAEVAAEsAgAAABQAAAAWAAGEAgAALRwAAAABAAAcFAAAABYAAUwVAAE8HwAAAB0A
+  AAAGAAAYAgAAAQYAABweAAAAAgAAABwAAAAFAAAMBgAAJB0AAAALAAAkCAAACBUAAYQCAAABCAAA
+  AAUAAAgcAAAABQAABAYAACQdAAAADwAAJBwAAAACAAAKBgAAJB0AAAATAAAkFwABxAIAAAAVAAHI
+  AgAAARQAAAAWAAHwBQAAABwAAAACAAAKBgAAJB0AAAANAAAkCAAAABUAAYwFAAAAHAAAAAIAAAAG
+  AAAkHQAAABMAACQWAAIQFwACGAIAAAAVAAIcAgAAARQAAAAWAALwBQAACBwAAAAFAAAEBgAAJB0A
+  AAAPAAAkHAAAAAIAADAGAAAkHQAAAAkAACQcAAAAAQAAHBQAAAAWAAJkFQACVB8AAAAdAAAABgAA
+  GAIAAAEGAAAcHgAAAAUAAAgcAAAABQAABAYAACQdAAAAEQAAJAgAAAgFAAAAHAAAAAIAAAoGAAAk
+  HQAAAA8AACQIAAAABQAAABwAAAACAAAABgAAJB0AAAATAAAkFgAC1BcAAtwCAAAAFQAC4AIAAAEU
+  AAAAFgAC7BUAAuwVAAHwAgAAChwAAAABAAAcFAAAABYAAwgVAAL4HwAAAB0AAAAGAAAYAgAAAQYA
+  ABweAAAABgAAJB0AAAABAAAkGQAAABUABRgCAAAAHAAAAAUAAAgcAAAAAgAAAAYAACQdAAAAEwAA
+  JBcAA2ACAAABFQADZAIAAAAUAAAAFgADoAIAAC0cAAAAAQAAHBQAAAAWAAOEFQADdB8AAAAdAAAA
+  BgAAGAIAAAEGAAAcHgAAABUAA7wCAAAAHAAAAAUAAAwGAAAkHQAAAAsAACQIAAAIAgAAAQgAAAAF
+  AAAIHAAAAAUAAAQGAAAkHQAAAA8AACQcAAAAAv//9gYAACQdAAAAEwAAJBYAA/gXAAQAAgAAARUA
+  BAQCAAAAFAAAABYABCwFAAAAHAAAAAIAAAoGAAAkHQAAAA0AACQIAAAAFQADxAUAAAAcAAAAAgAA
+  AAYAACQdAAAAEwAAJBYABEwXAARUAgAAABUABFgCAAABFAAAABYABQgCAAAAHAAAAAUAAAwcAAAA
+  BQAACAYAACQdAAAADwAAJAYAACQdAAAACwAAJBwAAAACAAAwBgAAJB0AAAAJAAAkHAAAAAEAABwU
+  AAAAFgAEtBUABKQfAAAAHQAAAAYAABgCAAABBgAAHB4AAAAFAAAIHAAAAAUAAAQGAAAkHQAAABEA
+  ACQIAAAIBQAAABwAAAACAAAKBgAAJB0AAAAPAAAkCAAAABUABCwGAAAkHQAAAAEAACQZAAAAFQAF
+  tAIAAAAcAAAAAgAAAAgAAAAFAAAIHAAAAAUAAAQOAAAEBgAAJB0AAAAJAAAkBgAAJAQAACQcAAAA
+  AgAAAAYAACQdAAAAEwAAJBYABWwVAAV0AgAAABUABXgCAAABFAAAABYABaAFAAAAHAAAAAIAAAEG
+  AAAkHQAAAAkAACQIAAAAFQAFLAUAAAAGAAAkHQAAAAEAACQZAAAAAQAAFBQAAAAWAAW0HwAAAAEA
+  ABAcAAAAAgAAAAYAABQdAAAAHgAAAAYAACABAAAgHAAAAAIAAAAGAAAkHQAAABMAACQWAAYAFQAG
+  CAIAAAAVAAYMAgAAARQAAAAWAAZ0AQAAIBwAAAABAAAcFAAAABYABiwVAAYcHwAAAB0AAAAGAAAY
+  AgAAAQYAABweAAAAAQAAFBQAAAAWAAZEHwAAAAEAABAcAAAAAgAAAAYAABQdAAAAHgAAAAYAACAV
+  AAXgGwAAAAAAAAkAAAAsAAAAjAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+out_hex: |-
+  [instructions: 414 words]
+  0x0000   -   1F000000   -   di
+  0x0004   -   02000000   -   loadi       #0
+  0x0008   -   06000010   -   store       0x0010
+  0x000C   -   02000000   -   loadi       #0
+  0x0010   -   06000014   -   store       0x0014
+  0x0014   -   02000000   -   loadi       #0
+  0x0018   -   06000018   -   store       0x0018
+  0x001C   -   02000000   -   loadi       #0
+  0x0020   -   0600001C   -   store       0x001C
+  0x0024   -   1E000000   -   ei
+  0x0028   -   15000088   -   jump        0x0088
+  0x002C   -   01000024   -   load        0x0024
+  0x0030   -   1C000000   -   push
+  0x0034   -   01000028   -   load        0x0028
+  0x0038   -   1C000000   -   push
+  0x003C   -   02000000   -   loadi       #0
+  0x0040   -   1F000000   -   di
+  0x0044   -   02000000   -   loadi       #0
+  0x0048   -   1C000000   -   push
+  0x004C   -   02000000   -   loadi       #0
+  0x0050   -   0E000004   -   muli        #4
+  0x0054   -   06000024   -   store       0x0024
+  0x0058   -   1D000000   -   pop
+  0x005C   -   09000024   -   add         0x0024
+  0x0060   -   06000024   -   store       0x0024
+  0x0064   -   04000024   -   load_ind    0x0024
+  0x0068   -   06000010   -   store       0x0010
+  0x006C   -   02000001   -   loadi       #1
+  0x0070   -   06000014   -   store       0x0014
+  0x0074   -   1D000000   -   pop
+  0x0078   -   06000028   -   store       0x0028
+  0x007C   -   1D000000   -   pop
+  0x0080   -   06000024   -   store       0x0024
+  0x0084   -   1A000000   -   iret
+  0x0088   -   150000F8   -   jump        0x00F8
+  0x008C   -   01000024   -   load        0x0024
+  0x0090   -   1C000000   -   push
+  0x0094   -   01000028   -   load        0x0028
+  0x0098   -   1C000000   -   push
+  0x009C   -   02000000   -   loadi       #0
+  0x00A0   -   1F000000   -   di
+  0x00A4   -   02000004   -   loadi       #4
+  0x00A8   -   1C000000   -   push
+  0x00AC   -   02000000   -   loadi       #0
+  0x00B0   -   0E000004   -   muli        #4
+  0x00B4   -   06000024   -   store       0x0024
+  0x00B8   -   1D000000   -   pop
+  0x00BC   -   09000024   -   add         0x0024
+  0x00C0   -   1C000000   -   push
+  0x00C4   -   01000018   -   load        0x0018
+  0x00C8   -   06000024   -   store       0x0024
+  0x00CC   -   1D000000   -   pop
+  0x00D0   -   06000028   -   store       0x0028
+  0x00D4   -   01000024   -   load        0x0024
+  0x00D8   -   07000028   -   store_ind   0x0028
+  0x00DC   -   02000000   -   loadi       #0
+  0x00E0   -   0600001C   -   store       0x001C
+  0x00E4   -   1D000000   -   pop
+  0x00E8   -   06000028   -   store       0x0028
+  0x00EC   -   1D000000   -   pop
+  0x00F0   -   06000024   -   store       0x0024
+  0x00F4   -   1A000000   -   iret
+  0x00F8   -   15000330   -   jump        0x0330
+  0x00FC   -   02000000   -   loadi       #0
+  0x0100   -   1C000000   -   push
+  0x0104   -   05000008   -   load_sp     +8
+  0x0108   -   1C000000   -   push
+  0x010C   -   02000000   -   loadi       #0
+  0x0110   -   06000024   -   store       0x0024
+  0x0114   -   1D000000   -   pop
+  0x0118   -   13000024   -   cmp         0x0024
+  0x011C   -   17000128   -   bge         0x0128
+  0x0120   -   02000001   -   loadi       #1
+  0x0124   -   1500012C   -   jump        0x012C
+  0x0128   -   02000000   -   loadi       #0
+  0x012C   -   14000000   -   cmpi        #0
+  0x0130   -   16000184   -   beq         0x0184
+  0x0134   -   0200002D   -   loadi       #45
+  0x0138   -   1C000000   -   push
+  0x013C   -   0100001C   -   load        0x001C
+  0x0140   -   14000000   -   cmpi        #0
+  0x0144   -   1600014C   -   beq         0x014C
+  0x0148   -   1500013C   -   jump        0x013C
+  0x014C   -   1F000000   -   di
+  0x0150   -   1D000000   -   pop
+  0x0154   -   06000018   -   store       0x0018
+  0x0158   -   02000001   -   loadi       #1
+  0x015C   -   0600001C   -   store       0x001C
+  0x0160   -   1E000000   -   ei
+  0x0164   -   02000000   -   loadi       #0
+  0x0168   -   1C000000   -   push
+  0x016C   -   0500000C   -   load_sp     +12
+  0x0170   -   06000024   -   store       0x0024
+  0x0174   -   1D000000   -   pop
+  0x0178   -   0B000024   -   sub         0x0024
+  0x017C   -   08000008   -   store_sp    +8
+  0x0180   -   15000184   -   jump        0x0184
+  0x0184   -   02000001   -   loadi       #1
+  0x0188   -   08000000   -   store_sp    +0
+  0x018C   -   05000008   -   load_sp     +8
+  0x0190   -   1C000000   -   push
+  0x0194   -   05000004   -   load_sp     +4
+  0x0198   -   06000024   -   store       0x0024
+  0x019C   -   1D000000   -   pop
+  0x01A0   -   0F000024   -   div         0x0024
+  0x01A4   -   1C000000   -   push
+  0x01A8   -   0200000A   -   loadi       #10
+  0x01AC   -   06000024   -   store       0x0024
+  0x01B0   -   1D000000   -   pop
+  0x01B4   -   13000024   -   cmp         0x0024
+  0x01B8   -   170001C4   -   bge         0x01C4
+  0x01BC   -   02000000   -   loadi       #0
+  0x01C0   -   150001C8   -   jump        0x01C8
+  0x01C4   -   02000001   -   loadi       #1
+  0x01C8   -   14000000   -   cmpi        #0
+  0x01CC   -   160001F0   -   beq         0x01F0
+  0x01D0   -   05000000   -   load_sp     +0
+  0x01D4   -   1C000000   -   push
+  0x01D8   -   0200000A   -   loadi       #10
+  0x01DC   -   06000024   -   store       0x0024
+  0x01E0   -   1D000000   -   pop
+  0x01E4   -   0D000024   -   mul         0x0024
+  0x01E8   -   08000000   -   store_sp    +0
+  0x01EC   -   1500018C   -   jump        0x018C
+  0x01F0   -   05000000   -   load_sp     +0
+  0x01F4   -   1C000000   -   push
+  0x01F8   -   02000000   -   loadi       #0
+  0x01FC   -   06000024   -   store       0x0024
+  0x0200   -   1D000000   -   pop
+  0x0204   -   13000024   -   cmp         0x0024
+  0x0208   -   16000210   -   beq         0x0210
+  0x020C   -   17000218   -   bge         0x0218
+  0x0210   -   02000000   -   loadi       #0
+  0x0214   -   1500021C   -   jump        0x021C
+  0x0218   -   02000001   -   loadi       #1
+  0x021C   -   14000000   -   cmpi        #0
+  0x0220   -   160002F0   -   beq         0x02F0
+  0x0224   -   05000008   -   load_sp     +8
+  0x0228   -   1C000000   -   push
+  0x022C   -   05000004   -   load_sp     +4
+  0x0230   -   06000024   -   store       0x0024
+  0x0234   -   1D000000   -   pop
+  0x0238   -   0F000024   -   div         0x0024
+  0x023C   -   1C000000   -   push
+  0x0240   -   02000030   -   loadi       #48
+  0x0244   -   06000024   -   store       0x0024
+  0x0248   -   1D000000   -   pop
+  0x024C   -   09000024   -   add         0x0024
+  0x0250   -   1C000000   -   push
+  0x0254   -   0100001C   -   load        0x001C
+  0x0258   -   14000000   -   cmpi        #0
+  0x025C   -   16000264   -   beq         0x0264
+  0x0260   -   15000254   -   jump        0x0254
+  0x0264   -   1F000000   -   di
+  0x0268   -   1D000000   -   pop
+  0x026C   -   06000018   -   store       0x0018
+  0x0270   -   02000001   -   loadi       #1
+  0x0274   -   0600001C   -   store       0x001C
+  0x0278   -   1E000000   -   ei
+  0x027C   -   05000008   -   load_sp     +8
+  0x0280   -   1C000000   -   push
+  0x0284   -   05000004   -   load_sp     +4
+  0x0288   -   06000024   -   store       0x0024
+  0x028C   -   1D000000   -   pop
+  0x0290   -   11000024   -   mod         0x0024
+  0x0294   -   08000008   -   store_sp    +8
+  0x0298   -   05000000   -   load_sp     +0
+  0x029C   -   1C000000   -   push
+  0x02A0   -   0200000A   -   loadi       #10
+  0x02A4   -   06000024   -   store       0x0024
+  0x02A8   -   1D000000   -   pop
+  0x02AC   -   0F000024   -   div         0x0024
+  0x02B0   -   08000000   -   store_sp    +0
+  0x02B4   -   05000000   -   load_sp     +0
+  0x02B8   -   1C000000   -   push
+  0x02BC   -   02000000   -   loadi       #0
+  0x02C0   -   06000024   -   store       0x0024
+  0x02C4   -   1D000000   -   pop
+  0x02C8   -   13000024   -   cmp         0x0024
+  0x02CC   -   160002D4   -   beq         0x02D4
+  0x02D0   -   170002DC   -   bge         0x02DC
+  0x02D4   -   02000000   -   loadi       #0
+  0x02D8   -   150002E0   -   jump        0x02E0
+  0x02DC   -   02000001   -   loadi       #1
+  0x02E0   -   14000000   -   cmpi        #0
+  0x02E4   -   160002EC   -   beq         0x02EC
+  0x02E8   -   150002EC   -   jump        0x02EC
+  0x02EC   -   150001F0   -   jump        0x01F0
+  0x02F0   -   0200000A   -   loadi       #10
+  0x02F4   -   1C000000   -   push
+  0x02F8   -   0100001C   -   load        0x001C
+  0x02FC   -   14000000   -   cmpi        #0
+  0x0300   -   16000308   -   beq         0x0308
+  0x0304   -   150002F8   -   jump        0x02F8
+  0x0308   -   1F000000   -   di
+  0x030C   -   1D000000   -   pop
+  0x0310   -   06000018   -   store       0x0018
+  0x0314   -   02000001   -   loadi       #1
+  0x0318   -   0600001C   -   store       0x001C
+  0x031C   -   1E000000   -   ei
+  0x0320   -   06000024   -   store       0x0024
+  0x0324   -   1D000000   -   pop
+  0x0328   -   01000024   -   load        0x0024
+  0x032C   -   19000000   -   ret
+  0x0330   -   15000518   -   jump        0x0518
+  0x0334   -   02000000   -   loadi       #0
+  0x0338   -   1C000000   -   push
+  0x033C   -   05000008   -   load_sp     +8
+  0x0340   -   1C000000   -   push
+  0x0344   -   02000000   -   loadi       #0
+  0x0348   -   06000024   -   store       0x0024
+  0x034C   -   1D000000   -   pop
+  0x0350   -   13000024   -   cmp         0x0024
+  0x0354   -   17000360   -   bge         0x0360
+  0x0358   -   02000001   -   loadi       #1
+  0x035C   -   15000364   -   jump        0x0364
+  0x0360   -   02000000   -   loadi       #0
+  0x0364   -   14000000   -   cmpi        #0
+  0x0368   -   160003A0   -   beq         0x03A0
+  0x036C   -   0200002D   -   loadi       #45
+  0x0370   -   1C000000   -   push
+  0x0374   -   0100001C   -   load        0x001C
+  0x0378   -   14000000   -   cmpi        #0
+  0x037C   -   16000384   -   beq         0x0384
+  0x0380   -   15000374   -   jump        0x0374
+  0x0384   -   1F000000   -   di
+  0x0388   -   1D000000   -   pop
+  0x038C   -   06000018   -   store       0x0018
+  0x0390   -   02000001   -   loadi       #1
+  0x0394   -   0600001C   -   store       0x001C
+  0x0398   -   1E000000   -   ei
+  0x039C   -   150003BC   -   jump        0x03BC
+  0x03A0   -   02000000   -   loadi       #0
+  0x03A4   -   1C000000   -   push
+  0x03A8   -   0500000C   -   load_sp     +12
+  0x03AC   -   06000024   -   store       0x0024
+  0x03B0   -   1D000000   -   pop
+  0x03B4   -   0B000024   -   sub         0x0024
+  0x03B8   -   08000008   -   store_sp    +8
+  0x03BC   -   02000001   -   loadi       #1
+  0x03C0   -   08000000   -   store_sp    +0
+  0x03C4   -   05000008   -   load_sp     +8
+  0x03C8   -   1C000000   -   push
+  0x03CC   -   05000004   -   load_sp     +4
+  0x03D0   -   06000024   -   store       0x0024
+  0x03D4   -   1D000000   -   pop
+  0x03D8   -   0F000024   -   div         0x0024
+  0x03DC   -   1C000000   -   push
+  0x03E0   -   02FFFFF6   -   loadi       #-10
+  0x03E4   -   06000024   -   store       0x0024
+  0x03E8   -   1D000000   -   pop
+  0x03EC   -   13000024   -   cmp         0x0024
+  0x03F0   -   160003F8   -   beq         0x03F8
+  0x03F4   -   17000400   -   bge         0x0400
+  0x03F8   -   02000001   -   loadi       #1
+  0x03FC   -   15000404   -   jump        0x0404
+  0x0400   -   02000000   -   loadi       #0
+  0x0404   -   14000000   -   cmpi        #0
+  0x0408   -   1600042C   -   beq         0x042C
+  0x040C   -   05000000   -   load_sp     +0
+  0x0410   -   1C000000   -   push
+  0x0414   -   0200000A   -   loadi       #10
+  0x0418   -   06000024   -   store       0x0024
+  0x041C   -   1D000000   -   pop
+  0x0420   -   0D000024   -   mul         0x0024
+  0x0424   -   08000000   -   store_sp    +0
+  0x0428   -   150003C4   -   jump        0x03C4
+  0x042C   -   05000000   -   load_sp     +0
+  0x0430   -   1C000000   -   push
+  0x0434   -   02000000   -   loadi       #0
+  0x0438   -   06000024   -   store       0x0024
+  0x043C   -   1D000000   -   pop
+  0x0440   -   13000024   -   cmp         0x0024
+  0x0444   -   1600044C   -   beq         0x044C
+  0x0448   -   17000454   -   bge         0x0454
+  0x044C   -   02000000   -   loadi       #0
+  0x0450   -   15000458   -   jump        0x0458
+  0x0454   -   02000001   -   loadi       #1
+  0x0458   -   14000000   -   cmpi        #0
+  0x045C   -   16000508   -   beq         0x0508
+  0x0460   -   02000000   -   loadi       #0
+  0x0464   -   1C000000   -   push
+  0x0468   -   0500000C   -   load_sp     +12
+  0x046C   -   1C000000   -   push
+  0x0470   -   05000008   -   load_sp     +8
+  0x0474   -   06000024   -   store       0x0024
+  0x0478   -   1D000000   -   pop
+  0x047C   -   0F000024   -   div         0x0024
+  0x0480   -   06000024   -   store       0x0024
+  0x0484   -   1D000000   -   pop
+  0x0488   -   0B000024   -   sub         0x0024
+  0x048C   -   1C000000   -   push
+  0x0490   -   02000030   -   loadi       #48
+  0x0494   -   06000024   -   store       0x0024
+  0x0498   -   1D000000   -   pop
+  0x049C   -   09000024   -   add         0x0024
+  0x04A0   -   1C000000   -   push
+  0x04A4   -   0100001C   -   load        0x001C
+  0x04A8   -   14000000   -   cmpi        #0
+  0x04AC   -   160004B4   -   beq         0x04B4
+  0x04B0   -   150004A4   -   jump        0x04A4
+  0x04B4   -   1F000000   -   di
+  0x04B8   -   1D000000   -   pop
+  0x04BC   -   06000018   -   store       0x0018
+  0x04C0   -   02000001   -   loadi       #1
+  0x04C4   -   0600001C   -   store       0x001C
+  0x04C8   -   1E000000   -   ei
+  0x04CC   -   05000008   -   load_sp     +8
+  0x04D0   -   1C000000   -   push
+  0x04D4   -   05000004   -   load_sp     +4
+  0x04D8   -   06000024   -   store       0x0024
+  0x04DC   -   1D000000   -   pop
+  0x04E0   -   11000024   -   mod         0x0024
+  0x04E4   -   08000008   -   store_sp    +8
+  0x04E8   -   05000000   -   load_sp     +0
+  0x04EC   -   1C000000   -   push
+  0x04F0   -   0200000A   -   loadi       #10
+  0x04F4   -   06000024   -   store       0x0024
+  0x04F8   -   1D000000   -   pop
+  0x04FC   -   0F000024   -   div         0x0024
+  0x0500   -   08000000   -   store_sp    +0
+  0x0504   -   1500042C   -   jump        0x042C
+  0x0508   -   06000024   -   store       0x0024
+  0x050C   -   1D000000   -   pop
+  0x0510   -   01000024   -   load        0x0024
+  0x0514   -   19000000   -   ret
+  0x0518   -   150005B4   -   jump        0x05B4
+  0x051C   -   02000000   -   loadi       #0
+  0x0520   -   1C000000   -   push
+  0x0524   -   02000000   -   loadi       #0
+  0x0528   -   08000000   -   store_sp    +0
+  0x052C   -   05000008   -   load_sp     +8
+  0x0530   -   1C000000   -   push
+  0x0534   -   05000004   -   load_sp     +4
+  0x0538   -   0E000004   -   muli        #4
+  0x053C   -   06000024   -   store       0x0024
+  0x0540   -   1D000000   -   pop
+  0x0544   -   09000024   -   add         0x0024
+  0x0548   -   06000024   -   store       0x0024
+  0x054C   -   04000024   -   load_ind    0x0024
+  0x0550   -   1C000000   -   push
+  0x0554   -   02000000   -   loadi       #0
+  0x0558   -   06000024   -   store       0x0024
+  0x055C   -   1D000000   -   pop
+  0x0560   -   13000024   -   cmp         0x0024
+  0x0564   -   1600056C   -   beq         0x056C
+  0x0568   -   15000574   -   jump        0x0574
+  0x056C   -   02000000   -   loadi       #0
+  0x0570   -   15000578   -   jump        0x0578
+  0x0574   -   02000001   -   loadi       #1
+  0x0578   -   14000000   -   cmpi        #0
+  0x057C   -   160005A0   -   beq         0x05A0
+  0x0580   -   05000000   -   load_sp     +0
+  0x0584   -   1C000000   -   push
+  0x0588   -   02000001   -   loadi       #1
+  0x058C   -   06000024   -   store       0x0024
+  0x0590   -   1D000000   -   pop
+  0x0594   -   09000024   -   add         0x0024
+  0x0598   -   08000000   -   store_sp    +0
+  0x059C   -   1500052C   -   jump        0x052C
+  0x05A0   -   05000000   -   load_sp     +0
+  0x05A4   -   06000024   -   store       0x0024
+  0x05A8   -   1D000000   -   pop
+  0x05AC   -   01000024   -   load        0x0024
+  0x05B0   -   19000000   -   ret
+  0x05B4   -   01000014   -   load        0x0014
+  0x05B8   -   14000000   -   cmpi        #0
+  0x05BC   -   160005B4   -   beq         0x05B4
+  0x05C0   -   1F000000   -   di
+  0x05C4   -   01000010   -   load        0x0010
+  0x05C8   -   1C000000   -   push
+  0x05CC   -   02000000   -   loadi       #0
+  0x05D0   -   06000014   -   store       0x0014
+  0x05D4   -   1D000000   -   pop
+  0x05D8   -   1E000000   -   ei
+  0x05DC   -   06000020   -   store       0x0020
+  0x05E0   -   01000020   -   load        0x0020
+  0x05E4   -   1C000000   -   push
+  0x05E8   -   02000000   -   loadi       #0
+  0x05EC   -   06000024   -   store       0x0024
+  0x05F0   -   1D000000   -   pop
+  0x05F4   -   13000024   -   cmp         0x0024
+  0x05F8   -   16000600   -   beq         0x0600
+  0x05FC   -   15000608   -   jump        0x0608
+  0x0600   -   02000000   -   loadi       #0
+  0x0604   -   1500060C   -   jump        0x060C
+  0x0608   -   02000001   -   loadi       #1
+  0x060C   -   14000000   -   cmpi        #0
+  0x0610   -   16000674   -   beq         0x0674
+  0x0614   -   01000020   -   load        0x0020
+  0x0618   -   1C000000   -   push
+  0x061C   -   0100001C   -   load        0x001C
+  0x0620   -   14000000   -   cmpi        #0
+  0x0624   -   1600062C   -   beq         0x062C
+  0x0628   -   1500061C   -   jump        0x061C
+  0x062C   -   1F000000   -   di
+  0x0630   -   1D000000   -   pop
+  0x0634   -   06000018   -   store       0x0018
+  0x0638   -   02000001   -   loadi       #1
+  0x063C   -   0600001C   -   store       0x001C
+  0x0640   -   1E000000   -   ei
+  0x0644   -   01000014   -   load        0x0014
+  0x0648   -   14000000   -   cmpi        #0
+  0x064C   -   16000644   -   beq         0x0644
+  0x0650   -   1F000000   -   di
+  0x0654   -   01000010   -   load        0x0010
+  0x0658   -   1C000000   -   push
+  0x065C   -   02000000   -   loadi       #0
+  0x0660   -   06000014   -   store       0x0014
+  0x0664   -   1D000000   -   pop
+  0x0668   -   1E000000   -   ei
+  0x066C   -   06000020   -   store       0x0020
+  0x0670   -   150005E0   -   jump        0x05E0
+  0x0674   -   1B000000   -   halt
+  
+  [data: 9 words]
+  0x0008   -   0000002C   -   $func_irq_input
+  0x000C   -   0000008C   -   $func_irq_output
+  0x0010   -   00000000   -   .word       0
+  0x0014   -   00000000   -   .word       0
+  0x0018   -   00000000   -   .word       0
+  0x001C   -   00000000   -   .word       0
+  0x0020   -   00000000   -   .word       0
+  0x0024   -   00000000   -   .word       0
+  0x0028   -   00000000   -   .word       0
+out_log: |-
+  ============================================================
+  TICK 1
+  
+  IF: PC=0    INSTR=0x1F000000
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=0    SP=262144   PC=4    IR=00000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 2
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=0    INSTR=DI
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=0    SP=262144   PC=4    IR=1F000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 3
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=0    INSTR=DI    STEP=0
+  
+  REG:        ACC=0   DR=0    AR=0    SP=262144   PC=4    IR=1F000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 4
+  
+  IF: PC=4    INSTR=0x02000000
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=0    SP=262144   PC=8    IR=1F000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 5
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=4    INSTR=LOADI 0
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=0    SP=262144   PC=8    IR=02000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 6
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=4    INSTR=LOADI 0   STEP=0
+  
+  REG:        ACC=0   DR=0    AR=0    SP=262144   PC=8    IR=02000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 7
+  
+  IF: PC=8    INSTR=0x06000010
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=0    SP=262144   PC=12   IR=02000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 8
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=8    INSTR=STORE 16
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=0    SP=262144   PC=12   IR=06000010
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 9
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=8    INSTR=STORE 16
+  EX: PC=8    INSTR=STORE 16  STEP=0
+  
+  REG:        ACC=0   DR=0    AR=16   SP=262144   PC=12   IR=06000010
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 10
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=8    INSTR=STORE 16
+  EX: PC=8    INSTR=STORE 16  STEP=1
+  
+  REG:        ACC=0   DR=0    AR=16   SP=262144   PC=12   IR=06000010
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 11
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=8    INSTR=STORE 16  STEP=2
+  
+  REG:        ACC=0   DR=0    AR=16   SP=262144   PC=12   IR=06000010
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 12
+  
+  IF: PC=12   INSTR=0x02000000
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=16   SP=262144   PC=16   IR=06000010
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 13
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=12   INSTR=LOADI 0
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=16   SP=262144   PC=16   IR=02000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 14
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=12   INSTR=LOADI 0   STEP=0
+  
+  REG:        ACC=0   DR=0    AR=16   SP=262144   PC=16   IR=02000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 15
+  
+  IF: PC=16   INSTR=0x06000014
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=16   SP=262144   PC=20   IR=02000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 16
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=16   INSTR=STORE 20
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=16   SP=262144   PC=20   IR=06000014
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 17
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=16   INSTR=STORE 20
+  EX: PC=16   INSTR=STORE 20  STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=20   IR=06000014
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 18
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=16   INSTR=STORE 20
+  EX: PC=16   INSTR=STORE 20  STEP=1
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=20   IR=06000014
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 19
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=16   INSTR=STORE 20  STEP=2
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=20   IR=06000014
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 20
+  
+  IF: PC=20   INSTR=0x02000000
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=24   IR=06000014
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 21
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=20   INSTR=LOADI 0
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=24   IR=02000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 22
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=20   INSTR=LOADI 0   STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=24   IR=02000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 23
+  
+  IF: PC=24   INSTR=0x06000018
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=28   IR=02000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 24
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=24   INSTR=STORE 24
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=28   IR=06000018
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 25
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=24   INSTR=STORE 24
+  EX: PC=24   INSTR=STORE 24  STEP=0
+  
+  REG:        ACC=0   DR=0    AR=24   SP=262144   PC=28   IR=06000018
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 26
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=24   INSTR=STORE 24
+  EX: PC=24   INSTR=STORE 24  STEP=1
+  
+  REG:        ACC=0   DR=0    AR=24   SP=262144   PC=28   IR=06000018
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 27
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=24   INSTR=STORE 24  STEP=2
+  
+  REG:        ACC=0   DR=0    AR=24   SP=262144   PC=28   IR=06000018
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 28
+  
+  IF: PC=28   INSTR=0x02000000
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=24   SP=262144   PC=32   IR=06000018
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 29
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=28   INSTR=LOADI 0
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=24   SP=262144   PC=32   IR=02000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 30
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=28   INSTR=LOADI 0   STEP=0
+  
+  REG:        ACC=0   DR=0    AR=24   SP=262144   PC=32   IR=02000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 31
+  
+  IF: PC=32   INSTR=0x0600001C
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=24   SP=262144   PC=36   IR=02000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 32
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=32   INSTR=STORE 28
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=24   SP=262144   PC=36   IR=0600001C
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 33
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=32   INSTR=STORE 28
+  EX: PC=32   INSTR=STORE 28  STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=36   IR=0600001C
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 34
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=32   INSTR=STORE 28
+  EX: PC=32   INSTR=STORE 28  STEP=1
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=36   IR=0600001C
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 35
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=32   INSTR=STORE 28  STEP=2
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=36   IR=0600001C
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 36
+  
+  IF: PC=36   INSTR=0x1E000000
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=40   IR=0600001C
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 37
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=36   INSTR=EI
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=40   IR=1E000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 38
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=36   INSTR=EI    STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=40   IR=1E000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 39
+  
+  IF: PC=40   INSTR=0x15000088
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=44   IR=1E000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 40
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=40   INSTR=JUMP 136
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=44   IR=15000088
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 41
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=40   INSTR=JUMP 136  STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=136  IR=15000088
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 42
+  
+  IF: PC=136  INSTR=0x150000F8
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=140  IR=15000088
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 43
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=136  INSTR=JUMP 248
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=140  IR=150000F8
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 44
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=136  INSTR=JUMP 248  STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=248  IR=150000F8
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 45
+  
+  IF: PC=248  INSTR=0x15000330
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=252  IR=150000F8
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 46
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=248  INSTR=JUMP 816
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=252  IR=15000330
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 47
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=248  INSTR=JUMP 816  STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=816  IR=15000330
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 48
+  
+  IF: PC=816  INSTR=0x15000518
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=820  IR=15000330
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 49
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=816  INSTR=JUMP 1304
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=820  IR=15000518
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 50
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=816  INSTR=JUMP 1304 STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=1304 IR=15000518
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 51
+  
+  IF: PC=1304 INSTR=0x150005B4
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=1308 IR=15000518
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 52
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1304 INSTR=JUMP 1460
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=1308 IR=150005B4
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 53
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=1304 INSTR=JUMP 1460 STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=1460 IR=150005B4
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 54
+  
+  IF: PC=1460 INSTR=0x01000014
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=1464 IR=150005B4
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 55
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1460 INSTR=LOAD 20
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=28   SP=262144   PC=1464 IR=01000014
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 56
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1460 INSTR=LOAD 20
+  EX: PC=1460 INSTR=LOAD 20   STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=01000014
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 57
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1460 INSTR=LOAD 20
+  EX: PC=1460 INSTR=LOAD 20   STEP=1
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=01000014
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 58
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=1460 INSTR=LOAD 20   STEP=2
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=01000014
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 59
+  
+  IF: PC=1464 INSTR=0x14000000
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1468 IR=01000014
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 60
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1464 INSTR=CMPI 0
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1468 IR=14000000
+  FLAGS:      N=0 Z=0 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 61
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=1464 INSTR=CMPI 0    STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1468 IR=14000000
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 62
+  
+  IF: PC=1468 INSTR=0x160005B4
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1472 IR=14000000
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 63
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1468 INSTR=BEQ 1460
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1472 IR=160005B4
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 64
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=1468 INSTR=BEQ 1460  STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1460 IR=160005B4
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 65
+  
+  IF: PC=1460 INSTR=0x01000014
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=160005B4
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 66
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1460 INSTR=LOAD 20
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=01000014
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 67
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1460 INSTR=LOAD 20
+  EX: PC=1460 INSTR=LOAD 20   STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=01000014
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 68
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1460 INSTR=LOAD 20
+  EX: PC=1460 INSTR=LOAD 20   STEP=1
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=01000014
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 69
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=1460 INSTR=LOAD 20   STEP=2
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=01000014
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 70
+  
+  IF: PC=1464 INSTR=0x14000000
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1468 IR=01000014
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 71
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1464 INSTR=CMPI 0
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1468 IR=14000000
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 72
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=1464 INSTR=CMPI 0    STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1468 IR=14000000
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 73
+  
+  IF: PC=1468 INSTR=0x160005B4
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1472 IR=14000000
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 74
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1468 INSTR=BEQ 1460
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1472 IR=160005B4
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 75
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=1468 INSTR=BEQ 1460  STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1460 IR=160005B4
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 76
+  
+  IF: PC=1460 INSTR=0x01000014
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=160005B4
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 77
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1460 INSTR=LOAD 20
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=01000014
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 78
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1460 INSTR=LOAD 20
+  EX: PC=1460 INSTR=LOAD 20   STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=01000014
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 79
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1460 INSTR=LOAD 20
+  EX: PC=1460 INSTR=LOAD 20   STEP=1
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=01000014
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 80
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=1460 INSTR=LOAD 20   STEP=2
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=01000014
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 81
+  
+  IF: PC=1464 INSTR=0x14000000
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1468 IR=01000014
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 82
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1464 INSTR=CMPI 0
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1468 IR=14000000
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 83
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=1464 INSTR=CMPI 0    STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1468 IR=14000000
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 84
+  
+  IF: PC=1468 INSTR=0x160005B4
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1472 IR=14000000
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 85
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1468 INSTR=BEQ 1460
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1472 IR=160005B4
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 86
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=1468 INSTR=BEQ 1460  STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1460 IR=160005B4
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 87
+  
+  IF: PC=1460 INSTR=0x01000014
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=160005B4
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 88
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1460 INSTR=LOAD 20
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=01000014
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 89
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1460 INSTR=LOAD 20
+  EX: PC=1460 INSTR=LOAD 20   STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=01000014
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 90
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1460 INSTR=LOAD 20
+  EX: PC=1460 INSTR=LOAD 20   STEP=1
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=01000014
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 91
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=1460 INSTR=LOAD 20   STEP=2
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=01000014
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 92
+  
+  IF: PC=1464 INSTR=0x14000000
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1468 IR=01000014
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 93
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1464 INSTR=CMPI 0
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1468 IR=14000000
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 94
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=1464 INSTR=CMPI 0    STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1468 IR=14000000
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 95
+  
+  IF: PC=1468 INSTR=0x160005B4
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1472 IR=14000000
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 96
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1468 INSTR=BEQ 1460
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1472 IR=160005B4
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 97
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=None INSTR=EMPTY
+  EX: PC=1468 INSTR=BEQ 1460  STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1460 IR=160005B4
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=EMPTY
+  ============================================================
+  TICK 98
+  
+  IF: PC=1460 INSTR=0x01000014
+  ID: PC=None INSTR=EMPTY
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=160005B4
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=VALID ID/EX=EMPTY
+  ============================================================
+  TICK 99
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1460 INSTR=LOAD 20
+  EX: PC=None INSTR=EMPTY STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=01000014
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
+  ============================================================
+  TICK 100
+  
+  IF: PC=None INSTR=EMPTY
+  ID: PC=1460 INSTR=LOAD 20
+  EX: PC=1460 INSTR=LOAD 20   STEP=0
+  
+  REG:        ACC=0   DR=0    AR=20   SP=262144   PC=1464 IR=01000014
+  FLAGS:      N=0 Z=1 V=0 C=0
+  PIPELINE:   IF/ID=EMPTY ID/EX=VALID
