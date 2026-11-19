@@ -4,7 +4,7 @@ from hardware.pipeline import Pipeline
 
 
 class CPU:
-    def __init__(self, instruction_memory: InstructionMemory, data_memory: DataMemory, pipeline: Pipeline):
+    def __init__(self, instruction_memory: InstructionMemory, data_memory: DataMemory, pipeline: Pipeline, pipeline_enabled=False):
         self.acc = 0
         self.dr = 0
         self.sp = MEMORY_SIZE
@@ -29,6 +29,10 @@ class CPU:
 
         self.pipeline = pipeline
         self.execute_step = 0
+
+        # не регистры, для сравнения
+        self.stage = "IF"
+        self.pipeline_enabled = pipeline_enabled
 
     def branch(self, address):
         self.pc = address
@@ -392,6 +396,10 @@ class CPU:
         return result
 
     def tick(self):
+        if not self.pipeline_enabled:
+            self.tick_without_pipeline()
+            return
+
         if self.pending_interrupts and self.execute_step == 0:
             return_pc = self.pipeline.id_ex_pc
 
@@ -418,6 +426,31 @@ class CPU:
         self.instruction_fetch()
 
         self.pc += WORD_SIZE
+
+    def tick_without_pipeline(self):
+        if self.stage == "IF":
+            if self.pending_interrupts:
+                self.accept_interrupt()
+                return
+
+            self.instruction_fetch()
+            self.pc += WORD_SIZE
+            self.stage = "ID"
+
+        elif self.stage == "ID":
+            self.decode_fetch()
+
+            self.pipeline.if_id_instruction = None
+            self.pipeline.if_id_pc = None
+
+            self.stage = "EX"
+
+        elif self.execute_fetch():
+            self.pipeline.id_ex_pc = None
+            self.pipeline.id_ex_opcode = None
+            self.pipeline.id_ex_operand = None
+
+            self.stage = "IF"
 
     def request_interrupt(self, source):
         if not self.interrupts_enable or self.in_interrupts:

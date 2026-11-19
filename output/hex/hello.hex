@@ -1,4 +1,4 @@
-[instructions: 397 words]
+[instructions: 385 words]
 0x0000   -   1F000000   -   di
 0x0004   -   02000000   -   loadi       #0
 0x0008   -   06000010   -   store       0x0010
@@ -383,19 +383,7 @@
 0x05F4   -   0A000004   -   addi        #4
 0x05F8   -   06000028   -   store       0x0028
 0x05FC   -   150005BC   -   jump        0x05BC
-0x0600   -   0200000A   -   loadi       #10
-0x0604   -   1C000000   -   push
-0x0608   -   0100001C   -   load        0x001C
-0x060C   -   14000000   -   cmpi        #0
-0x0610   -   16000618   -   beq         0x0618
-0x0614   -   15000608   -   jump        0x0608
-0x0618   -   1F000000   -   di
-0x061C   -   1D000000   -   pop
-0x0620   -   06000018   -   store       0x0018
-0x0624   -   02000001   -   loadi       #1
-0x0628   -   0600001C   -   store       0x001C
-0x062C   -   1E000000   -   ei
-0x0630   -   1B000000   -   halt
+0x0600   -   1B000000   -   halt
 
 [data: 21 words]
 0x0008   -   0000002C   -   $func_irq_input

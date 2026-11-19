@@ -326,7 +326,6 @@ class Compile:
             ("JUMP", loop),
             (end + ":",)
         ]
-        self.__move_from_acc_to_buffer(PrintCharExpr(NumberExpr(10)))
 
     def __translate_expr_input_number(self):
         label_wait = self.__new_label("in_nbr_wait")

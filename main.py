@@ -29,13 +29,9 @@ if __name__ == "__main__":
 
     parser.add_argument("source", help="файл программы на lisp")
     parser.add_argument("--input", help="файл расписания ввода")
-    parser.add_argument("--pipeline", help="запуск процессора с конвеером")
+    parser.add_argument("--pipeline", nargs="?", const="True", default="False", choices=("True", "False"), help="True — с конвейером, False — без конвейера")
 
     arg = parser.parse_args()
-
-    if not arg.pipeline:
-        print("режим без конвеера еще не реализован")
-        exit()
 
     source_path = Path(arg.source)
     name = source_path.stem
@@ -93,6 +89,6 @@ if __name__ == "__main__":
 
     logs_path.write_text("", encoding="utf-8")
 
-    machine = Machine(logs_path, results_path, input_schedule)
+    machine = Machine(logs_path, results_path, input_schedule, arg.pipeline == "True")
     machine.load_program(bin_path)
     machine.run()

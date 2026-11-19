@@ -194,7 +194,7 @@ class Lexer:
                 while end < self.len_source and self.source[end] != '"':
                     end += 1
 
-                value = self.source[self.position + 1:end]
+                value = self.source[self.position + 1:end].replace("\\n", "\n")
                 self.tokens.append(Token(TokenType.STRING, value))
                 self.position = end + 1
 

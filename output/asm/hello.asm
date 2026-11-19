@@ -464,18 +464,4 @@ print_str_check_49:
     STORE    print_str_ptr_47
     JUMP     print_str_loop_48
 print_str_end_50:
-    LOADI    10
-    PUSH
-wait_52:
-    LOAD     system_out_ready
-    CMPI     0
-    BEQ      wait_52_end
-    JUMP     wait_52
-wait_52_end:
-    DI
-    POP
-    STORE    system_out_buffer
-    LOADI    1
-    STORE    system_out_ready
-    EI
     HALT

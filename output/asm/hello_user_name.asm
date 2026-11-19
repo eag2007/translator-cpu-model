@@ -26,15 +26,31 @@ string_51:
 .word                    109
 .word                    101
 .word                    63
+.word                    10
 .word                    0
-input_str_53:
-.word                    0
-.word                    0
-.word                    0
+input_str_52:
 .word                    0
 .word                    0
 .word                    0
-print_str_ptr_63:
+.word                    0
+.word                    0
+.word                    0
+print_str_ptr_55:
+.word                    0
+string_59:
+.word                    72
+.word                    101
+.word                    108
+.word                    108
+.word                    111
+.word                    32
+.word                    0
+print_str_ptr_60:
+.word                    0
+print_str_ptr_64:
+.word                    0
+string_68:
+.word                    33
 .word                    0
 _start:
     DI
@@ -481,32 +497,18 @@ print_str_check_49:
     STORE    print_str_ptr_47
     JUMP     print_str_loop_48
 print_str_end_50:
-    LOADI    10
-    PUSH
-wait_52:
-    LOAD     system_out_ready
-    CMPI     0
-    BEQ      wait_52_end
-    JUMP     wait_52
-wait_52_end:
-    DI
-    POP
-    STORE    system_out_buffer
-    LOADI    1
-    STORE    system_out_ready
-    EI
-    LOAD_ADDR input_str_53
+    LOAD_ADDR input_str_52
     STORE    $tmp_address$
     LOADI    5
     STORE    $tmp$
-input_loop_54:
+input_loop_53:
     LOAD     $tmp$
     CMPI     0
-    BEQ      input_loop_54_end
-in_nbr_wait_55:
+    BEQ      input_loop_53_end
+in_nbr_wait_54:
     LOAD     system_in_ready
     CMPI     0
-    BEQ      in_nbr_wait_55
+    BEQ      in_nbr_wait_54
     DI
     LOAD     system_in_buffer
     PUSH
@@ -521,142 +523,74 @@ in_nbr_wait_55:
     LOAD     $tmp$
     SUBI     1
     STORE    $tmp$
-    JUMP     input_loop_54
-input_loop_54_end:
-    LOAD_ADDR input_str_53
+    JUMP     input_loop_53
+input_loop_53_end:
+    LOAD_ADDR input_str_52
     STORE    name
-    LOADI    72
-    PUSH
-wait_56:
+    LOAD_ADDR string_59
+    STORE    print_str_ptr_55
+print_str_loop_56:
     LOAD     system_out_ready
     CMPI     0
-    BEQ      wait_56_end
-    JUMP     wait_56
-wait_56_end:
+    BEQ      print_str_check_57
+    JUMP     print_str_loop_56
+print_str_check_57:
+    LOAD_IND print_str_ptr_55
+    CMPI     0
+    BEQ      print_str_end_58
     DI
-    POP
+    LOAD_IND print_str_ptr_55
     STORE    system_out_buffer
     LOADI    1
     STORE    system_out_ready
     EI
-    LOADI    101
-    PUSH
-wait_57:
-    LOAD     system_out_ready
-    CMPI     0
-    BEQ      wait_57_end
-    JUMP     wait_57
-wait_57_end:
-    DI
-    POP
-    STORE    system_out_buffer
-    LOADI    1
-    STORE    system_out_ready
-    EI
-    LOADI    108
-    PUSH
-wait_58:
-    LOAD     system_out_ready
-    CMPI     0
-    BEQ      wait_58_end
-    JUMP     wait_58
-wait_58_end:
-    DI
-    POP
-    STORE    system_out_buffer
-    LOADI    1
-    STORE    system_out_ready
-    EI
-    LOADI    108
-    PUSH
-wait_59:
-    LOAD     system_out_ready
-    CMPI     0
-    BEQ      wait_59_end
-    JUMP     wait_59
-wait_59_end:
-    DI
-    POP
-    STORE    system_out_buffer
-    LOADI    1
-    STORE    system_out_ready
-    EI
-    LOADI    111
-    PUSH
-wait_60:
-    LOAD     system_out_ready
-    CMPI     0
-    BEQ      wait_60_end
-    JUMP     wait_60
-wait_60_end:
-    DI
-    POP
-    STORE    system_out_buffer
-    LOADI    1
-    STORE    system_out_ready
-    EI
-    LOADI    44
-    PUSH
-wait_61:
-    LOAD     system_out_ready
-    CMPI     0
-    BEQ      wait_61_end
-    JUMP     wait_61
-wait_61_end:
-    DI
-    POP
-    STORE    system_out_buffer
-    LOADI    1
-    STORE    system_out_ready
-    EI
-    LOADI    32
-    PUSH
-wait_62:
-    LOAD     system_out_ready
-    CMPI     0
-    BEQ      wait_62_end
-    JUMP     wait_62
-wait_62_end:
-    DI
-    POP
-    STORE    system_out_buffer
-    LOADI    1
-    STORE    system_out_ready
-    EI
-    LOAD     name
-    STORE    print_str_ptr_63
-print_str_loop_64:
-    LOAD     system_out_ready
-    CMPI     0
-    BEQ      print_str_check_65
-    JUMP     print_str_loop_64
-print_str_check_65:
-    LOAD_IND print_str_ptr_63
-    CMPI     0
-    BEQ      print_str_end_66
-    DI
-    LOAD_IND print_str_ptr_63
-    STORE    system_out_buffer
-    LOADI    1
-    STORE    system_out_ready
-    EI
-    LOAD     print_str_ptr_63
+    LOAD     print_str_ptr_55
     ADDI     4
-    STORE    print_str_ptr_63
-    JUMP     print_str_loop_64
-print_str_end_66:
-    LOADI    10
-    PUSH
-wait_67:
+    STORE    print_str_ptr_55
+    JUMP     print_str_loop_56
+print_str_end_58:
+    LOAD     name
+    STORE    print_str_ptr_60
+print_str_loop_61:
     LOAD     system_out_ready
     CMPI     0
-    BEQ      wait_67_end
-    JUMP     wait_67
-wait_67_end:
+    BEQ      print_str_check_62
+    JUMP     print_str_loop_61
+print_str_check_62:
+    LOAD_IND print_str_ptr_60
+    CMPI     0
+    BEQ      print_str_end_63
     DI
-    POP
+    LOAD_IND print_str_ptr_60
     STORE    system_out_buffer
     LOADI    1
     STORE    system_out_ready
     EI
+    LOAD     print_str_ptr_60
+    ADDI     4
+    STORE    print_str_ptr_60
+    JUMP     print_str_loop_61
+print_str_end_63:
+    LOAD_ADDR string_68
+    STORE    print_str_ptr_64
+print_str_loop_65:
+    LOAD     system_out_ready
+    CMPI     0
+    BEQ      print_str_check_66
+    JUMP     print_str_loop_65
+print_str_check_66:
+    LOAD_IND print_str_ptr_64
+    CMPI     0
+    BEQ      print_str_end_67
+    DI
+    LOAD_IND print_str_ptr_64
+    STORE    system_out_buffer
+    LOADI    1
+    STORE    system_out_ready
+    EI
+    LOAD     print_str_ptr_64
+    ADDI     4
+    STORE    print_str_ptr_64
+    JUMP     print_str_loop_65
+print_str_end_67:
     HALT
