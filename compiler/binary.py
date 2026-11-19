@@ -1,8 +1,11 @@
-from config import OPCODE_TABLE, WORD_SIZE
 from struct import pack
 
+from config import OPCODE_TABLE, WORD_SIZE
 
-def binary_function(data: list[tuple[str, ...]], instructions: list[tuple[str, ...]], bin_path, hex_path) -> None:
+
+def binary_function(
+    data: list[tuple[str, ...]], instructions: list[tuple[str, ...]], bin_path, hex_path
+) -> None:
     # ячейка 0x00-0x03 занята под адрес mmio ввода
     # ячейка 0x04-0x07 занята под адрес mmio вывода
     # ячейка 0x08-0x0B занята под адрес обработчика ввода
@@ -11,12 +14,16 @@ def binary_function(data: list[tuple[str, ...]], instructions: list[tuple[str, .
     address_instructions = 0
 
     data_labels: dict[str, int] = make_data_labels(data, address_data)
-    instructions_labels: dict[str, int] = make_instructions_label(instructions, address_instructions)
+    instructions_labels: dict[str, int] = make_instructions_label(
+        instructions, address_instructions
+    )
 
     irq_input_addr = instructions_labels["$func_irq_input"]
     irq_output_addr = instructions_labels["$func_irq_output"]
 
-    instructions_binary = make_binary_instructions(instructions, data_labels, instructions_labels)
+    instructions_binary = make_binary_instructions(
+        instructions, data_labels, instructions_labels
+    )
     data_binary = make_binary_data(data)
 
     data_binary.insert(0, irq_output_addr)
@@ -28,12 +35,12 @@ def binary_function(data: list[tuple[str, ...]], instructions: list[tuple[str, .
     with open(bin_path, "wb") as file:
         file.write(pack(">I", len(instructions_binary)))
 
-        for instruction_bin in instructions_binary:
-            file.write(pack(">I", instruction_bin))
+        file.writelines(
+            pack(">I", instruction_bin) for instruction_bin in instructions_binary
+        )
 
         file.write(pack(">I", len(data_binary)))
-        for data_bin in data_binary:
-            file.write(pack(">I", data_bin))
+        file.writelines(pack(">I", data_bin) for data_bin in data_binary)
 
     with open(hex_path, "w", encoding="UTF-8") as file:
         file.write(f"[instructions: {len(instructions_binary)} words]\n")
@@ -52,7 +59,7 @@ def make_data_labels(data, data_counter: int) -> dict[str, int]:
         parts = list(record)
 
         if parts[0] != ".word" and len(parts) == 3:
-            label, _, value = parts
+            label, _, _value = parts
             data_labels[label] = data_counter
 
         elif len(parts) == 1:
@@ -79,12 +86,25 @@ def make_instructions_label(instructions, instruction_counter: int) -> dict[str,
     return instructions_labels
 
 
-def make_binary_instructions(instructions: list[tuple[str, ...]], data_labels: dict[str, int],
-                             instructions_labels: dict[str, int]) -> list[int]:
+def make_binary_instructions(
+    instructions: list[tuple[str, ...]],
+    data_labels: dict[str, int],
+    instructions_labels: dict[str, int],
+) -> list[int]:
     words: list[int] = []
 
     move_commands = {"JUMP", "BGE", "BEQ", "CALL"}
-    signed_commands = {"LOADI", "STORE_SP", "LOAD_SP", "ADDI", "SUBI", "MULI", "DIVI", "MODI", "CMPI"}
+    signed_commands = {
+        "LOADI",
+        "STORE_SP",
+        "LOAD_SP",
+        "ADDI",
+        "SUBI",
+        "MULI",
+        "DIVI",
+        "MODI",
+        "CMPI",
+    }
 
     for instruction in instructions:
         if instruction[0][-1] == ":":
@@ -109,9 +129,13 @@ def make_binary_instructions(instructions: list[tuple[str, ...]], data_labels: d
 
         if command in signed_commands:
             if not -(1 << 23) <= operand < (1 << 23):
-                raise ValueError(f"Операнд не помещается в знаковые 24 бита: {instruction}")
+                raise ValueError(
+                    f"Операнд не помещается в знаковые 24 бита: {instruction}"
+                )
         elif not 0 <= operand < (1 << 24):
-            raise ValueError(f"Операнл не помещается в беззнаковые 24 бита: {instruction}")
+            raise ValueError(
+                f"Операнл не помещается в беззнаковые 24 бита: {instruction}"
+            )
 
         word = (opcode << 24) | (operand & 0xFFFFFF)
         words.append(word)
@@ -128,19 +152,30 @@ def make_binary_data(data: list[tuple[str, ...]]):
         value = 0 if word[-1] == "?" else int(word[-1])
 
         if not -(1 << 31) <= value < (1 << 31):
-            raise ValueError(f"Значение не помещается в знаковые 32 битные числа: {word}")
+            raise ValueError(
+                f"Значение не помещается в знаковые 32 битные числа: {word}"
+            )
 
         words.append(value & 0xFFFFFFFF)
     return words
 
 
-def make_hex_instructions(instructions: list[tuple[str, ...]], instructions_binary: list[int]) -> list[str]:
+def make_hex_instructions(
+    instructions: list[tuple[str, ...]], instructions_binary: list[int]
+) -> list[str]:
     lines: list[str] = []
     index = 0
 
     signed_commands = {
-        "LOADI", "STORE_SP", "LOAD_SP",
-        "ADDI", "SUBI", "MULI", "DIVI", "MODI", "CMPI",
+        "LOADI",
+        "STORE_SP",
+        "LOAD_SP",
+        "ADDI",
+        "SUBI",
+        "MULI",
+        "DIVI",
+        "MODI",
+        "CMPI",
     }
     for instruction in instructions:
         command = instruction[0]
@@ -165,16 +200,22 @@ def make_hex_instructions(instructions: list[tuple[str, ...]], instructions_bina
             else:
                 argument = f"0x{operand:04X}"
 
-        mnemonic = f"{command.lower()   :<12}{argument}"
-        lines.append(f"0x{index * WORD_SIZE:04X}   -   {word:08X}   -   {mnemonic}".rstrip())
+        mnemonic = f"{command.lower():<12}{argument}"
+        lines.append(
+            f"0x{index * WORD_SIZE:04X}   -   {word:08X}   -   {mnemonic}".rstrip()
+        )
         index += 1
 
     return lines
 
 
-def make_hex_data(data: list[tuple[str, ...]], data_binary: list[int], address_data: int) -> list[str]:
-    lines: list[str] = [f"0x0008   -   {data_binary[0]:08X}   -   $func_irq_input",
-                        f"0x000C   -   {data_binary[1]:08X}   -   $func_irq_output"]
+def make_hex_data(
+    data: list[tuple[str, ...]], data_binary: list[int], address_data: int
+) -> list[str]:
+    lines: list[str] = [
+        f"0x0008   -   {data_binary[0]:08X}   -   $func_irq_input",
+        f"0x000C   -   {data_binary[1]:08X}   -   $func_irq_output",
+    ]
     index = 2
 
     for record in data:
@@ -183,7 +224,9 @@ def make_hex_data(data: list[tuple[str, ...]], data_binary: list[int], address_d
 
         word = data_binary[index]
         value = 0 if record[-1] == "?" else int(record[-1])
-        lines.append(f"0x{address_data:04X}   -   {word:08X}   -   {'.word':<12}{value}")
+        lines.append(
+            f"0x{address_data:04X}   -   {word:08X}   -   {'.word':<12}{value}"
+        )
         index += 1
         address_data += WORD_SIZE
 

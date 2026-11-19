@@ -3,10 +3,7 @@ from config import OPCODE_TABLE
 
 class Logger:
     def __init__(self, path):
-        self.opcodes = {
-            value[0]: name.upper()
-            for name, value in OPCODE_TABLE.items()
-        }
+        self.opcodes = {value[0]: name.upper() for name, value in OPCODE_TABLE.items()}
         self.path = path
 
     def instruction_name(self, opcode, operand):
@@ -54,21 +51,11 @@ class Logger:
                 )
             print(file=f)
 
-            print(
-                f"IF:\tPC={p.if_id_pc}\t"
-                f"INSTR={if_instruction}", file=f
-            )
+            print(f"IF:\tPC={p.if_id_pc}\tINSTR={if_instruction}", file=f)
 
-            print(
-                f"ID:\tPC={p.id_ex_pc}\t"
-                f"INSTR={id_instruction}", file=f
-            )
+            print(f"ID:\tPC={p.id_ex_pc}\tINSTR={id_instruction}", file=f)
 
-            print(
-                f"EX:\tPC={ex_pc}\t"
-                f"INSTR={ex_instruction}\t"
-                f"STEP={ex_step}", file=f
-            )
+            print(f"EX:\tPC={ex_pc}\tINSTR={ex_instruction}\tSTEP={ex_step}", file=f)
 
             print(file=f)
 
@@ -78,32 +65,16 @@ class Logger:
                 f"AR={cpu.ar}\t"
                 f"SP={cpu.sp}\t"
                 f"PC={cpu.pc}\t"
-                f"IR={cpu.ir:08X}", file=f
+                f"IR={cpu.ir:08X}",
+                file=f,
             )
 
             n, z, v, c = cpu.flags
 
-            print(
-                f"FLAGS:\t\tN={n}\t"
-                f"Z={z}\t"
-                f"V={v}\t"
-                f"C={c}", file=f
-            )
+            print(f"FLAGS:\t\tN={n}\tZ={z}\tV={v}\tC={c}", file=f)
 
-            if_id = (
-                "VALID"
-                if p.if_id_instruction is not None
-                else "EMPTY"
-            )
+            if_id = "VALID" if p.if_id_instruction is not None else "EMPTY"
 
-            id_ex = (
-                "VALID"
-                if p.id_ex_opcode is not None
-                else "EMPTY"
-            )
+            id_ex = "VALID" if p.id_ex_opcode is not None else "EMPTY"
 
-            print(
-                f"PIPELINE:\tIF/ID={if_id}\t"
-                f"ID/EX={id_ex}", file=f
-            )
-
+            print(f"PIPELINE:\tIF/ID={if_id}\tID/EX={id_ex}", file=f)

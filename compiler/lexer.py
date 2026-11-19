@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 from enum import Enum, auto
+from typing import ClassVar
 
 
 class TokenType(Enum):
     """Класс Enum содержащий все типы морфем в языке"""
+
     LBRACKET = auto()
     RBRACKET = auto()
 
@@ -55,9 +57,10 @@ class TokenType(Enum):
 @dataclass
 class Token:
     """Класс токен - минимальная единициа, хранит в себе тип морфемы и эту морфему
-        :var type:      одно из значений типов enum
-        :var value:     сама морфема
+    :var type:      одно из значений типов enum
+    :var value:     сама морфема
     """
+
     type: TokenType
     value: object
 
@@ -72,7 +75,7 @@ class Lexer:
     STRING_PATTERN = r'"[^"\\]*(?:\\.[^"\\]*)*"'
     IDENTIFIER_PATTERN = r"[a-zA-Z_][a-zA-Z0-9_]*"
 
-    KEYWORDS = {
+    KEYWORDS: ClassVar[dict[str, TokenType]] = {
         "(": TokenType.LBRACKET,
         ")": TokenType.RBRACKET,
         # r"-?\d+": TokenType.NUMBER,
@@ -114,10 +117,10 @@ class Lexer:
 
     def __init__(self) -> None:
         """Инициализация полей лексера
-            :var self.source:               исходные данные (строка текста)
-            :var self.len_source:           длина исходных данных
-            :var self.position:             текущая позиция в исходных данных
-            :var self.tokens:               список токенов полученных после разбиения
+        :var self.source:               исходные данные (строка текста)
+        :var self.len_source:           длина исходных данных
+        :var self.position:             текущая позиция в исходных данных
+        :var self.tokens:               список токенов полученных после разбиения
         """
         self.source: str = ""
         self.len_source: int = 0
@@ -126,29 +129,33 @@ class Lexer:
 
     def __made_tokens(self) -> None:
         """Парсит текст и создает токены
-            :return None
+        :return None
         """
         while self.position < self.len_source:
             mask1 = self.source[self.position]
-            mask2 = self.source[self.position:self.position + 2]
-            mask3 = self.source[self.position:self.position + 3]
-            mask4 = self.source[self.position:self.position + 4]
-            mask5 = self.source[self.position:self.position + 5]
-            mask6 = self.source[self.position:self.position + 6]
-            mask7 = self.source[self.position:self.position + 7]
-            mask10 = self.source[self.position:self.position + 10]
-            mask12 = self.source[self.position:self.position + 12]
+            mask2 = self.source[self.position : self.position + 2]
+            mask3 = self.source[self.position : self.position + 3]
+            mask4 = self.source[self.position : self.position + 4]
+            mask5 = self.source[self.position : self.position + 5]
+            mask6 = self.source[self.position : self.position + 6]
+            mask7 = self.source[self.position : self.position + 7]
+            mask10 = self.source[self.position : self.position + 10]
+            mask12 = self.source[self.position : self.position + 12]
 
             if mask1 in [" ", "\t", "\n"]:
                 self.position += 1
 
-            elif mask1 == "-" and self.position + 1 < self.len_source and self.source[self.position + 1].isdigit():
+            elif (
+                mask1 == "-"
+                and self.position + 1 < self.len_source
+                and self.source[self.position + 1].isdigit()
+            ):
                 end = self.position + 1
 
                 while end < self.len_source and self.source[end].isdigit():
                     end += 1
 
-                value = self.source[self.position:end]
+                value = self.source[self.position : end]
                 self.tokens.append(Token(TokenType.NUMBER, int(value)))
                 self.position = end
 
@@ -194,7 +201,7 @@ class Lexer:
                 while end < self.len_source and self.source[end] != '"':
                     end += 1
 
-                value = self.source[self.position + 1:end].replace("\\n", "\n")
+                value = self.source[self.position + 1 : end].replace("\\n", "\n")
                 self.tokens.append(Token(TokenType.STRING, value))
                 self.position = end + 1
 
@@ -204,17 +211,19 @@ class Lexer:
                 while end < self.len_source and self.source[end].isdigit():
                     end += 1
 
-                value = self.source[self.position:end]
+                value = self.source[self.position : end]
                 self.tokens.append(Token(TokenType.NUMBER, int(value)))
                 self.position = end
 
             elif mask1.isalpha() or mask1 == "_":
                 end = self.position
 
-                while end < self.len_source and (self.source[end].isalnum() or self.source[end] == "_"):
+                while end < self.len_source and (
+                    self.source[end].isalnum() or self.source[end] == "_"
+                ):
                     end += 1
 
-                value = self.source[self.position:end]
+                value = self.source[self.position : end]
                 self.tokens.append(Token(TokenType.IDENTIFIER, value))
                 self.position = end
 
@@ -226,14 +235,14 @@ class Lexer:
 
     def get_tokens(self) -> list[Token]:
         """Метод получения списка токенов
-            :return self.tokens:        список токенов
+        :return self.tokens:        список токенов
         """
         return self.tokens
 
     def load_source(self, source: str) -> None:
         """Загружает ресурсы и запускает процесс создания токенов
-            :param source:              исходные данные в виде строки
-            :return None
+        :param source:              исходные данные в виде строки
+        :return None
         """
         self.source = source
         self.len_source = len(source)

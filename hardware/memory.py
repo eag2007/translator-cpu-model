@@ -7,7 +7,12 @@ class Memory:
 
     def load(self, index):
         if 0 <= index <= MEMORY_SIZE - WORD_SIZE:
-            return (self.memory[index] << 24) | (self.memory[index + 1] << 16) | (self.memory[index + 2] << 8) | self.memory[index + 3]
+            return (
+                (self.memory[index] << 24)
+                | (self.memory[index + 1] << 16)
+                | (self.memory[index + 2] << 8)
+                | self.memory[index + 3]
+            )
         return None
 
     def store(self, index, value):

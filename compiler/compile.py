@@ -1,3 +1,5 @@
+from typing import cast
+
 from compiler.parser import *
 from config import WORD_SIZE
 
@@ -7,15 +9,15 @@ class Compile:
 
     def __init__(self):
         """Инициализация полей компилятора
-            :var self.instructions:     список всех команд ассемблера
-            :var self.indetifiers:      множество названий глобальных элементов
-            :var self.ast:              переменная которая будет хранить принимаемое ast дерево на вход
-            :var self.label_count:      счётчик меток, благодаря нему делаются уникальные метки
-            :var self.data:             список зарезервированных мест под глобальные переменные
-            :var self.functions:        словарь названий функций и их меток
-            :var self.stack_depth:      считает глубину стека (нужен для вычислений адресов локальных переменных)
-            :var self.stack_ident:      словарь локальных переменных функции и их адресов в стеке
-                (a: -12, b: -8)
+        :var self.instructions:     список всех команд ассемблера
+        :var self.indetifiers:      множество названий глобальных элементов
+        :var self.ast:              переменная которая будет хранить принимаемое ast дерево на вход
+        :var self.label_count:      счётчик меток, благодаря нему делаются уникальные метки
+        :var self.data:             список зарезервированных мест под глобальные переменные
+        :var self.functions:        словарь названий функций и их меток
+        :var self.stack_depth:      считает глубину стека (нужен для вычислений адресов локальных переменных)
+        :var self.stack_ident:      словарь локальных переменных функции и их адресов в стеке
+            (a: -12, b: -8)
         """
         self.instructions = [("_start:",)]
         self.identifiers = []
@@ -28,8 +30,8 @@ class Compile:
 
     def load_ast(self, ast: list[Expr]):
         """Загружает AST дерево expressions
-            :param ast: Список выражений expressions
-            :return None
+        :param ast: Список выражений expressions
+        :return None
         """
         self.ast = ast
         self.__select(self.ast)
@@ -44,22 +46,22 @@ class Compile:
 
     def __push(self):
         """Кладет значение из ACC в верхушку стека, меняет глубину стека
-            :return None
+        :return None
         """
         self.instructions += [("PUSH",)]
         self.stack_depth -= 1
 
     def __pop(self):
         """Снимает значение из верхушки стека и кладет его в ACC, меняет глубину стека
-            :return None
+        :return None
         """
         self.instructions += [("POP",)]
         self.stack_depth += 1
 
     def __variable_address(self, name):
         """Дает ссылку на переменную (если переменная локальная то адрес в стеке, иначе метку на глобальную)
-            :param name:            название переменной
-            :return str:            возвращает метку или соответсвующее смешение в стеке, где лежит переменная
+        :param name:            название переменной
+        :return str:            возвращает метку или соответсвующее смешение в стеке, где лежит переменная
         """
         if name in self.stack_ident:
             offset = self.stack_ident[name] - self.stack_depth - 1
@@ -68,17 +70,17 @@ class Compile:
 
     def __translate(self, ast_tree):
         """Первый обход по всем expression для выявления всех глобальных переменных и статических значений
-            :param ast_tree:        дерево expressions
-            :return None
+        :param ast_tree:        дерево expressions
+        :return None
         """
         for expression in ast_tree:
             self.__translate_expr(expression)
 
     def __translate_expr(self, expression):
         """Производит обход по expression и если находит в нем глобальную переменную или значение,
-                то оставляет под нее место в памяти
-            :param expression       выражение expression
-            :return None
+            то оставляет под нее место в памяти
+        :param expression       выражение expression
+        :return None
         """
         if isinstance(expression, BinaryExpr):
             if expression.operation == "+":
@@ -174,8 +176,8 @@ class Compile:
 
     def __new_label(self, prefix) -> str:
         """Создает новую уникальную метку
-            :param prefix:      название метки
-            :return str:        строку с названием метки
+        :param prefix:      название метки
+        :return str:        строку с названием метки
         """
         label = f"{prefix}_{self.label_count}"
         self.label_count += 1
@@ -183,8 +185,8 @@ class Compile:
 
     def __see_local_variable(self, expr):
         """Выделяет память в стеке под локальные переменные конкретной функции
-            :param expr:        выражение
-            :return None
+        :param expr:        выражение
+        :return None
         """
         if isinstance(expr, DefuncExpr):
             return
@@ -244,8 +246,8 @@ class Compile:
 
     def __create_memory_for_local_variables(self, funcexpr: DefuncExpr):
         """Перебирает expression в функции, чтобы выделить память в стеке под локальные переменные
-            :param funcexpr:        выражение тела функции
-            :return None
+        :param funcexpr:        выражение тела функции
+        :return None
         """
         for expr in funcexpr.body:
             self.__see_local_variable(expr)
@@ -280,6 +282,7 @@ class Compile:
             ("STORE", "system_out_ready"),
             ("EI",),
         ]
+
     def __translate_expr_print_char(self, expression: PrintCharExpr):
         self.__move_from_acc_to_buffer(expression)
 
@@ -293,10 +296,7 @@ class Compile:
         check = self.__new_label("print_str_check")
         end = self.__new_label("print_str_end")
 
-        self.data += [
-            (ptr + ":",),
-            (".word", "0")
-        ]
+        self.data += [(ptr + ":",), (".word", "0")]
 
         self.__translate_expr(expression.value)
         self.instructions += [
@@ -319,12 +319,11 @@ class Compile:
             ("LOADI", "1"),
             ("STORE", "system_out_ready"),
             ("EI",),
-
             ("LOAD", ptr),
             ("ADDI", str(WORD_SIZE)),
             ("STORE", ptr),
             ("JUMP", loop),
-            (end + ":",)
+            (end + ":",),
         ]
 
     def __translate_expr_input_number(self):
@@ -336,22 +335,21 @@ class Compile:
             ("CMPI", "0"),
             ("BEQ", label_wait),
             ("DI",),
-            ("LOAD", "system_in_buffer")
+            ("LOAD", "system_in_buffer"),
         ]
         self.__push()
-        self.instructions += [
-            ("LOADI", "0"),
-            ("STORE", "system_in_ready")
-        ]
+        self.instructions += [("LOADI", "0"), ("STORE", "system_in_ready")]
         self.__pop()
         self.instructions += [("EI",)]
 
     def __translate_expr_input_string(self, expression: InputExpr):
-        size = expression.size.value
+        size = cast(NumberExpr, expression.size).value
         label = self.__new_label("input_str")
         loop = self.__new_label("input_loop")
 
-        self.data += [(label + ":",), ]
+        self.data += [
+            (label + ":",),
+        ]
         self.data += [(".word", "0")] * (size + 1)
 
         self.instructions += [
@@ -362,7 +360,7 @@ class Compile:
             (loop + ":",),
             ("LOAD", "$tmp$"),
             ("CMPI", "0"),
-            ("BEQ", loop + "_end")
+            ("BEQ", loop + "_end"),
         ]
 
         self.__translate_expr_input_number()
@@ -377,13 +375,13 @@ class Compile:
             ("STORE", "$tmp$"),
             ("JUMP", loop),
             (loop + "_end:",),
-            ("LOAD_ADDR", label)
+            ("LOAD_ADDR", label),
         ]
 
     def __translate_expr_defunc(self, expression: DefuncExpr, return_opcode="RET"):
         """Перевод из defunc expression в ассемблер код
-            :param expression:      выражение функции
-            :return None
+        :param expression:      выражение функции
+        :return None
         """
         label_function = f"$func_{expression.name}"
         label_end = self.__new_label("end")
@@ -432,18 +430,15 @@ class Compile:
             self.__pop()
             self.instructions += [("STORE", "$tmp$")]
 
-        self.instructions += [
-            (return_opcode,),
-            (label_end + ":",)
-        ]
+        self.instructions += [(return_opcode,), (label_end + ":",)]
 
         self.stack_ident = external_ident
         self.stack_depth = external_depth
 
     def __translate_expr_funcall(self, expression: FuncCallExpr):
         """Перевод func call expression в ассемблер код
-            :param expression:      выражение вызова функции
-            :return None
+        :param expression:      выражение вызова функции
+        :return None
         """
         for arg in expression.args:
             self.__translate_expr(arg)
@@ -460,8 +455,8 @@ class Compile:
 
     def __translate_expr_repeat(self, expression: RepeatExpr):
         """Перевод из repeat expression в ассемблер код (цикл с счётчиком)
-            :param expression:      выражение цикла с счётчиком
-            :return None
+        :param expression:      выражение цикла с счётчиком
+        :return None
         """
         label_check = self.__new_label("repeat_check")
         label_loop = self.__new_label("repeat_loop")
@@ -480,37 +475,27 @@ class Compile:
         for expr in expression.body:
             self.__translate_expr(expr)
         self.__pop()
-        self.instructions += [
-            ("SUBI", "1"),
-            ("JUMP", label_check),
-            (label_end + ":",)
-        ]
+        self.instructions += [("SUBI", "1"), ("JUMP", label_check), (label_end + ":",)]
 
     def __translate_expr_while(self, expression: WhileExpr):
         """Перевод из while expression в ассемблер код
-            :param expression:      выражение цикла
-            :return None
+        :param expression:      выражение цикла
+        :return None
         """
         label_loop = self.__new_label("loop")
         label_end = self.__new_label("end")
 
         self.instructions += [(label_loop + ":",)]
         self.__translate_expr(expression.condition)
-        self.instructions += [
-            ("CMPI", "0"),
-            ("BEQ", label_end)
-        ]
+        self.instructions += [("CMPI", "0"), ("BEQ", label_end)]
         for expr in expression.body:
             self.__translate_expr(expr)
-        self.instructions += [
-            ("JUMP", label_loop),
-            (label_end + ":",)
-        ]
+        self.instructions += [("JUMP", label_loop), (label_end + ":",)]
 
     def __translate_expr_string(self, expression: StringExpr):
         """Перевод string expression в ассемблер код
-            :param expression:      выражение строки
-            :return None
+        :param expression:      выражение строки
+        :return None
         """
         label_string = self.__new_label("string")
 
@@ -522,23 +507,17 @@ class Compile:
 
     def __translate_expr_if(self, expression: IfExpr):
         """Перевод if expression в ассемблер код
-            :param expression:      выражение условий
-            :return None
+        :param expression:      выражение условий
+        :return None
         """
         label_false = self.__new_label("if_false")
         label_end = self.__new_label("end")
 
         self.__translate_expr(expression.condition)
-        self.instructions += [
-            ("CMPI", "0"),
-            ("BEQ", label_false)
-        ]
+        self.instructions += [("CMPI", "0"), ("BEQ", label_false)]
         for expr in expression.body:
             self.__translate_expr(expr)
-        self.instructions += [
-            ("JUMP", label_end),
-            (label_false + ":",)
-        ]
+        self.instructions += [("JUMP", label_end), (label_false + ":",)]
 
         if not (expression.else_body is None):
             for expr in expression.else_body:
@@ -547,8 +526,8 @@ class Compile:
 
     def __translate_expr_left(self, expression: BinaryExpr):
         """Перевод binary operation > expression в ассемблер код
-            :param expression:      выражение бинарной операции
-            :return None
+        :param expression:      выражение бинарной операции
+        :return None
         """
         label_true = self.__new_label("left_true")
         label_false = self.__new_label("left_false")
@@ -568,13 +547,13 @@ class Compile:
             ("JUMP", label_end),
             (label_true + ":",),
             ("LOADI", "1"),
-            (label_end + ":",)
+            (label_end + ":",),
         ]
 
     def __translate_expr_right(self, expression: BinaryExpr):
         """Перевод binary operation < expression в ассемблер код
-            :param expression:      выражение бинарной операции
-            :return None
+        :param expression:      выражение бинарной операции
+        :return None
         """
         label_false = self.__new_label("right_false")
         label_end = self.__new_label("end")
@@ -591,13 +570,13 @@ class Compile:
             ("JUMP", label_end),
             (label_false + ":",),
             ("LOADI", "0"),
-            (label_end + ":",)
+            (label_end + ":",),
         ]
 
     def __translate_expr_lefteq(self, expression: BinaryExpr):
         """Перевод binary operation >= expression в ассемблер код
-            :param expression:      выражение бинарной операции
-            :return None
+        :param expression:      выражение бинарной операции
+        :return None
         """
         label_true = self.__new_label("lefteq_true")
         label_end = self.__new_label("end")
@@ -614,13 +593,13 @@ class Compile:
             ("JUMP", label_end),
             (label_true + ":",),
             ("LOADI", "1"),
-            (label_end + ":",)
+            (label_end + ":",),
         ]
 
     def __translate_expr_righteq(self, expression: BinaryExpr):
         """Перевод binary operation <= expression в ассемблер код
-            :param expression:      выражение бинарной операции
-            :return None
+        :param expression:      выражение бинарной операции
+        :return None
         """
         label_true = self.__new_label("lefteq_true")
         label_false = self.__new_label("lefteq_false")
@@ -641,13 +620,13 @@ class Compile:
             ("JUMP", label_end),
             (label_false + ":",),
             ("LOADI", "0"),
-            (label_end + ":",)
+            (label_end + ":",),
         ]
 
     def __translate_expr_eq(self, expression: BinaryExpr):
         """Перевод binary operation == expression в ассемблер код
-            :param expression:      выражение бинарной операции
-            :return None
+        :param expression:      выражение бинарной операции
+        :return None
         """
         label_true = self.__new_label("equal_true")
         label_false = self.__new_label("equal_false")
@@ -656,8 +635,7 @@ class Compile:
         self.__translate_expr(expression.left)
         self.__push()
         self.__translate_expr(expression.right)
-        self.instructions += [
-            ("STORE", "$tmp$")]
+        self.instructions += [("STORE", "$tmp$")]
         self.__pop()
         self.instructions += [
             ("CMP", "$tmp$"),
@@ -669,13 +647,13 @@ class Compile:
             (label_false + ":",),
             ("LOADI", "0"),
             ("JUMP", label_end),
-            (label_end + ":",)
+            (label_end + ":",),
         ]
 
     def __translate_expr_not_eq(self, expression: BinaryExpr):
         """Перевод binary operation != expression в ассемблер код
-            :param expression:      выражение бинарной операции
-            :return None
+        :param expression:      выражение бинарной операции
+        :return None
         """
         label_true = self.__new_label("not_equal_true")
         label_false = self.__new_label("not_equal_false")
@@ -695,13 +673,13 @@ class Compile:
             ("JUMP", label_end),
             (label_true + ":",),
             ("LOADI", "1"),
-            (label_end + ":",)
+            (label_end + ":",),
         ]
 
     def __translate_expr_ident(self, expression: IdentifierExpr):
         """Перевод identifier expression в ассемблер код
-            :param expression:      выражение уникального идентификатора
-            :return None
+        :param expression:      выражение уникального идентификатора
+        :return None
         """
         is_local, address = self.__variable_address(expression.name)
         opcode = "LOAD_SP" if is_local else "LOAD"
@@ -709,8 +687,8 @@ class Compile:
 
     def __translate_expr_set(self, expression: SetExpr):
         """Перевод set expression в ассемблер код
-            :param expression:      выражение сохранения в переменную
-            :return None
+        :param expression:      выражение сохранения в переменную
+        :return None
         """
         self.__translate_expr(expression.value)
         is_local, address = self.__variable_address(expression.target.name)
@@ -719,15 +697,15 @@ class Compile:
 
     def __translate_expr_number(self, expression: NumberExpr):
         """Перевод number expression в ассемблер код
-            :param expression:      выражение числа
-            :return None
+        :param expression:      выражение числа
+        :return None
         """
         self.instructions += [("LOADI", f"{expression.value}")]
 
     def __translate_expr_sum(self, expression: BinaryExpr):
         """Перевод binary operation + expression в ассемблер код
-            :param expression:      выражение бинарной операции
-            :return None
+        :param expression:      выражение бинарной операции
+        :return None
         """
         self.__translate_expr(expression.left)
         self.__push()
@@ -738,8 +716,8 @@ class Compile:
 
     def __translate_expr_sub(self, expression: BinaryExpr):
         """Перевод binary operation - expression в ассемблер код
-            :param expression:      выражение бинарной операции
-            :return None
+        :param expression:      выражение бинарной операции
+        :return None
         """
         self.__translate_expr(expression.left)
         self.__push()
@@ -750,8 +728,8 @@ class Compile:
 
     def __translate_expr_mul(self, expression: BinaryExpr):
         """Перевод binary operation * expression в ассемблер код
-            :param expression:      выражение бинарной операции
-            :return None
+        :param expression:      выражение бинарной операции
+        :return None
         """
         self.__translate_expr(expression.left)
         self.__push()
@@ -762,8 +740,8 @@ class Compile:
 
     def __translate_expr_div(self, expression: BinaryExpr):
         """Перевод binary operation // expression в ассемблер код
-            :param expression:      выражение бинарной операции
-            :return None
+        :param expression:      выражение бинарной операции
+        :return None
         """
         self.__translate_expr(expression.left)
         self.__push()
@@ -774,8 +752,8 @@ class Compile:
 
     def __translate_expr_mod(self, expression: BinaryExpr):
         """Перевод binary operation % expression в ассемблер код
-            :param expression:      выражение бинарной операции
-            :return None
+        :param expression:      выражение бинарной операции
+        :return None
         """
         self.__translate_expr(expression.left)
         self.__push()
@@ -785,7 +763,7 @@ class Compile:
         self.instructions += [("MOD", "$tmp$")]
 
     def __translate_expr_array(self, expression: ArrayExpr):
-        size = expression.size.value
+        size = cast(NumberExpr, expression.size).value
         label_array = self.__new_label("array")
         self.data += [(label_array + ":",)]
 
@@ -802,14 +780,12 @@ class Compile:
         self.__push()
         self.__translate_expr(index)
         self.instructions += [("MULI", str(WORD_SIZE))]
-        self.instructions += [
-            ("STORE", "$tmp$")
-        ]
+        self.instructions += [("STORE", "$tmp$")]
         self.__pop()
         self.instructions += [
             ("ADD", "$tmp$"),
             ("STORE", "$tmp$"),
-            ("LOAD_IND", "$tmp$")
+            ("LOAD_IND", "$tmp$"),
         ]
 
     def __translate_expr_array_set(self, expression: ArraySetExpr):
@@ -832,11 +808,11 @@ class Compile:
         self.instructions += [
             ("STORE", "$tmp_address$"),
             ("LOAD", "$tmp$"),
-            ("STORE_IND", "$tmp_address$")
+            ("STORE_IND", "$tmp_address$"),
         ]
 
     def __translate_expr_string_alloc(self, expression: StringAllocExpr):
-        size = expression.size.value
+        size = cast(NumberExpr, expression.size).value
         label_string = self.__new_label("string")
         self.data += [(label_string + ":",)]
 
@@ -861,7 +837,7 @@ class Compile:
         self.instructions += [
             ("ADD", "$tmp$"),
             ("STORE", "$tmp$"),
-            ("LOAD_IND", "$tmp$")
+            ("LOAD_IND", "$tmp$"),
         ]
 
     def __translate_expr_set_char(self, expression: SetCharExpr):
@@ -878,9 +854,7 @@ class Compile:
 
         self.__pop()
 
-        self.instructions += [
-            ("ADD", "$tmp$")
-        ]
+        self.instructions += [("ADD", "$tmp$")]
 
         self.__push()
         self.__translate_expr(value)
@@ -891,7 +865,7 @@ class Compile:
         self.instructions += [
             ("STORE", "$tmp_address$"),
             ("LOAD", "$tmp$"),
-            ("STORE_IND", "$tmp_address$")
+            ("STORE_IND", "$tmp_address$"),
         ]
 
     def __translate_expr_irq_input(self, expression: DefuncExpr):
@@ -902,25 +876,25 @@ class Compile:
 
     def __select(self, ast_tree):
         """Создает список из глобальных переменных вычисленных из Expression выражений
-            :param ast_tree:   дерево выражений
-            :return None
+        :param ast_tree:   дерево выражений
+        :return None
         """
         for element_ast in ast_tree:
             self.__select_identifiers(element_ast, True)
 
-        if '$tmp$' not in self.identifiers:
-            self.identifiers.append('$tmp$')
-        if '$tmp_address$' not in self.identifiers:
-            self.identifiers.append('$tmp_address$')
+        if "$tmp$" not in self.identifiers:
+            self.identifiers.append("$tmp$")
+        if "$tmp_address$" not in self.identifiers:
+            self.identifiers.append("$tmp_address$")
 
         for identifier in self.identifiers:
-            self.data.append((identifier, '.word', "0"))
+            self.data.append((identifier, ".word", "0"))
 
     def __select_identifiers(self, expression: Expr, is_global: bool):
         """Выбирает глобальные переменные из Expression выражений
-            :param expression: выражение
-            :param is_global:  переменная флаг (отвечает за то является ли переменная локальной или глобальной)
-            :return None
+        :param expression: выражение
+        :param is_global:  переменная флаг (отвечает за то является ли переменная локальной или глобальной)
+        :return None
         """
         if isinstance(expression, SetExpr) and is_global:
             if expression.target.name not in self.identifiers:

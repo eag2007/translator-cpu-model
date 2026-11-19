@@ -1,10 +1,16 @@
-from config import MEMORY_SIZE, OPCODE_TABLE, IMM_BINARY_OPS, MEM_BINARY_OPS, WORD_SIZE
-from hardware.memory import InstructionMemory, DataMemory
+from config import IMM_BINARY_OPS, MEM_BINARY_OPS, MEMORY_SIZE, OPCODE_TABLE, WORD_SIZE
+from hardware.memory import DataMemory, InstructionMemory
 from hardware.pipeline import Pipeline
 
 
 class CPU:
-    def __init__(self, instruction_memory: InstructionMemory, data_memory: DataMemory, pipeline: Pipeline, pipeline_enabled=False):
+    def __init__(
+        self,
+        instruction_memory: InstructionMemory,
+        data_memory: DataMemory,
+        pipeline: Pipeline,
+        pipeline_enabled=False,
+    ):
         self.acc = 0
         self.dr = 0
         self.sp = MEMORY_SIZE
@@ -150,10 +156,10 @@ class CPU:
                 self.acc = self.dr
                 self.execute_step = 0
 
-        if opcode in IMM_BINARY_OPS.keys():
+        if opcode in IMM_BINARY_OPS:
             return self.execute_imm_bin_operation(operand, IMM_BINARY_OPS[opcode])
 
-        if opcode in MEM_BINARY_OPS.keys():
+        if opcode in MEM_BINARY_OPS:
             return self.execute_bin_operation(operand, MEM_BINARY_OPS[opcode])
 
         if opcode == OPCODE_TABLE["cmpi"][0]:
@@ -235,13 +241,11 @@ class CPU:
                 self.data_memory.store(self.ar, self.dr)
                 self.execute_step = 0
 
-        if opcode == OPCODE_TABLE["beq"][0]:
-            if self.flags[1]:
-                self.branch(operand)
+        if opcode == OPCODE_TABLE["beq"][0] and self.flags[1]:
+            self.branch(operand)
 
-        if opcode == OPCODE_TABLE["bge"][0]:
-            if self.flags[0] == self.flags[2]:
-                self.branch(operand)
+        if opcode == OPCODE_TABLE["bge"][0] and self.flags[0] == self.flags[2]:
+            self.branch(operand)
 
         if opcode == OPCODE_TABLE["call"][0]:
             if self.execute_step == 0:
@@ -255,7 +259,9 @@ class CPU:
                 return False
 
             if self.execute_step == 2:
-                self.dr = self.alu(self.pipeline.id_ex_pc, WORD_SIZE, "add", update_flags=False)
+                self.dr = self.alu(
+                    self.pipeline.id_ex_pc, WORD_SIZE, "add", update_flags=False
+                )
                 self.execute_step = 3
                 return False
 
@@ -384,7 +390,7 @@ class CPU:
             total = sign_a - quotient * sign_b
 
         result = total & 0xFFFFFFFF
-        
+
         if update_flags:
             self.flags[0] = int(bool(result & 0x80000000))
             self.flags[1] = int(result == 0)
@@ -415,9 +421,8 @@ class CPU:
         if self.halted:
             return
 
-        if self.pending_interrupts:
-            if self.accept_interrupt():
-                return
+        if self.pending_interrupts and self.accept_interrupt():
+            return
 
         # ID
         self.decode_fetch()
@@ -471,7 +476,11 @@ class CPU:
         else:
             self.interrupt_return_pc = self.pc
 
-        handler_address = self.data_memory.load(2 * WORD_SIZE if self.pending_interrupts_source == "input" else 3 * WORD_SIZE)
+        handler_address = self.data_memory.load(
+            2 * WORD_SIZE
+            if self.pending_interrupts_source == "input"
+            else 3 * WORD_SIZE
+        )
 
         self.pending_interrupts = False
         self.pending_interrupts_source = None

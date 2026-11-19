@@ -1,13 +1,12 @@
 import base64
 import os
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 
 import yaml
-
 
 ROOT = Path(__file__).resolve().parents[1]
 GOLDEN_DIR = ROOT / "golden"
@@ -35,7 +34,9 @@ def run_program(case):
         work = Path(directory)
 
         (work / "compiler").mkdir()
-        (work / "compiler/system.lisp").write_bytes((ROOT / "compiler/system.lisp").read_bytes())
+        (work / "compiler/system.lisp").write_bytes(
+            (ROOT / "compiler/system.lisp").read_bytes()
+        )
         (work / "program.lisp").write_text(case["in_source"], encoding="utf-8")
         (work / "input.txt").write_text(case["in_schedule"], encoding="utf-8")
 
@@ -55,12 +56,12 @@ def run_program(case):
             text=True,
             encoding="utf-8",
             timeout=45,
+            check=False,
         )
 
         if result.returncode != 0:
             raise RuntimeError(
-                f"main.py завершился с кодом {result.returncode}:\n"
-                f"{result.stderr}"
+                f"main.py завершился с кодом {result.returncode}:\n{result.stderr}"
             )
 
         output = work / "output"
@@ -75,9 +76,7 @@ def run_program(case):
             "out_asm": limit_lines(read("asm/program.asm")),
             "out_binary": (output / "bin/program.asm").read_bytes(),
             "out_hex": limit_lines(read("hex/program.hex")),
-            "out_log": limit_lines(
-                read("logs/program.log").expandtabs(4)
-            ),
+            "out_log": limit_lines(read("logs/program.log").expandtabs(4)),
         }
 
 
@@ -94,7 +93,7 @@ def save_case(path, case):
                 file.write(f"{key}: !!binary |\n")
 
                 for start in range(0, len(encoded), 76):
-                    line = encoded[start:start + 76]
+                    line = encoded[start : start + 76]
                     file.write(f"  {line}\n")
 
             elif isinstance(value, str):
@@ -102,13 +101,8 @@ def save_case(path, case):
                     file.write(f"{key}: ''\n")
                     continue
 
-                if any(
-                    ord(char) < 32 and char not in "\n\t"
-                    for char in value
-                ):
-                    raise ValueError(
-                        f"{key}: в тексте найден управляющий символ"
-                    )
+                if any(ord(char) < 32 and char not in "\n\t" for char in value):
+                    raise ValueError(f"{key}: в тексте найден управляющий символ")
 
                 ending = len(value) - len(value.rstrip("\n"))
 
@@ -128,9 +122,7 @@ def save_case(path, case):
                         file.write("\n")
 
             else:
-                raise TypeError(
-                    f"{key}: неподдерживаемый тип {type(value).__name__}"
-                )
+                raise TypeError(f"{key}: неподдерживаемый тип {type(value).__name__}")
 
     loaded = yaml.safe_load(path.read_text(encoding="utf-8"))
 
@@ -153,12 +145,8 @@ def create_goldens():
             input_path = ROOT / "input" / name
 
             case = {
-                "in_source": limit_lines(
-                    source_path.read_text(encoding="utf-8")
-                ),
-                "in_schedule": limit_lines(
-                    input_path.read_text(encoding="utf-8")
-                ),
+                "in_source": limit_lines(source_path.read_text(encoding="utf-8")),
+                "in_schedule": limit_lines(input_path.read_text(encoding="utf-8")),
                 "in_pipeline": pipeline,
             }
 

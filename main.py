@@ -10,7 +10,6 @@ from compiler.lexer import Lexer
 from compiler.parser import Parser
 from hardware.machine import Machine
 
-
 if __name__ == "__main__":
     if len(sys.argv) == 2 and sys.argv[1] == "clear":
         output_path = Path("output")
@@ -23,13 +22,20 @@ if __name__ == "__main__":
                     path.rmdir()
 
         print("папка output очищена")
-        exit()
+        sys.exit()
 
     parser = argparse.ArgumentParser()
 
     parser.add_argument("source", help="файл программы на lisp")
     parser.add_argument("--input", help="файл расписания ввода")
-    parser.add_argument("--pipeline", nargs="?", const="True", default="False", choices=("True", "False"), help="True — с конвейером, False — без конвейера")
+    parser.add_argument(
+        "--pipeline",
+        nargs="?",
+        const="True",
+        default="False",
+        choices=("True", "False"),
+        help="True — с конвейером, False — без конвейера",
+    )
 
     arg = parser.parse_args()
 

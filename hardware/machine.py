@@ -4,17 +4,21 @@ from pathlib import Path
 from config import WORD_SIZE
 from hardware.cpu import CPU
 from hardware.interrupts import Interrupts
-from hardware.memory import InstructionMemory, DataMemory
+from hardware.memory import DataMemory, InstructionMemory
 from hardware.pipeline import Pipeline
 from logger import Logger
 
 
 class Machine:
-    def __init__(self, path_output, result_path, input_schedule, pipeline_enabled=False):
+    def __init__(
+        self, path_output, result_path, input_schedule, pipeline_enabled=False
+    ):
         self.instruction_memory = InstructionMemory()
         self.data_memory = DataMemory()
         self.pipeline = Pipeline()
-        self.cpu = CPU(self.instruction_memory, self.data_memory, self.pipeline, pipeline_enabled)
+        self.cpu = CPU(
+            self.instruction_memory, self.data_memory, self.pipeline, pipeline_enabled
+        )
         self.interrupts = Interrupts(input_schedule)
         self.output_buffer = []
 
@@ -30,7 +34,9 @@ class Machine:
             self.tick_count += 1
 
             input_event = self.interrupts.tick_input(self.tick_count, self.data_memory)
-            output_event = self.interrupts.tick_output(self.tick_count, self.data_memory)
+            output_event = self.interrupts.tick_output(
+                self.tick_count, self.data_memory
+            )
 
             if input_event:
                 self.cpu.request_interrupt("input")
@@ -57,12 +63,25 @@ class Machine:
 
         print(f"Количество тактов: {self.tick_count}")
         print(self.output_buffer)
-        print(''.join(chr(i) for i in self.output_buffer if isinstance(i, int) and 0 <= i <= 255))
+        print(
+            "".join(
+                chr(i)
+                for i in self.output_buffer
+                if isinstance(i, int) and 0 <= i <= 255
+            )
+        )
 
         with open(self.result_path, "w", encoding="utf-8") as file:
             print(f"Количество тактов: {self.tick_count}", file=file)
             print(self.output_buffer, file=file)
-            print(''.join(chr(i) for i in self.output_buffer if isinstance(i, int) and 0 <= i <= 255), file=file)
+            print(
+                "".join(
+                    chr(i)
+                    for i in self.output_buffer
+                    if isinstance(i, int) and 0 <= i <= 255
+                ),
+                file=file,
+            )
 
     def load_program(self, path: Path):
         binary_file = path.read_bytes()
@@ -74,7 +93,7 @@ class Machine:
         instructions = struct.unpack_from(f">{instruction_count}I", binary_file, offset)
         offset += instruction_count * WORD_SIZE
 
-        data_count = struct.unpack_from(f">I", binary_file, offset)[0]
+        data_count = struct.unpack_from(">I", binary_file, offset)[0]
         offset += WORD_SIZE
 
         data = struct.unpack_from(f">{data_count}i", binary_file, offset)
